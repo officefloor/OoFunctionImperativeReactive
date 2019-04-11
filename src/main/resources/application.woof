@@ -1,0 +1,32 @@
+<woof>
+  <http-continuations>
+    <http-continuation path="/event-loop" secure="false" x="118" y="106">
+      <section name="EventLoop" input="service"/>
+    </http-continuation>
+  </http-continuations>
+  <http-inputs>
+    <http-input path="/thread-per-request" method="POST" secure="false" x="78" y="185">
+      <section name="ThreadPerRequest" input="service"/>
+    </http-input>
+  </http-inputs>
+  <templates>
+  </templates>
+  <sections>
+    <section name="EventLoop" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.EventLoopService" x="322" y="85">
+      <input name="service" parameter-type=""/>
+    </section>
+    <section name="ThreadPerRequest" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ThreadPerRequestService" x="320" y="167">
+      <input name="service" parameter-type=""/>
+    </section>
+  </sections>
+  <securities>
+  </securities>
+  <governances>
+  </governances>
+  <resources>
+  </resources>
+  <exceptions>
+  </exceptions>
+  <starting>
+  </starting>
+</woof>
