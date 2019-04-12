@@ -15,33 +15,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package net.officefloor.demo.entity;
+package net.officefloor.demo;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import net.officefloor.plugin.managedfunction.clazz.Qualifier;
+import net.officefloor.plugin.variable.VariableManagedObjectSource;
 
 /**
- * Request {@link Entity}.
+ * Request identifier {@link VariableManagedObjectSource}.
  * 
  * @author Daniel Sagenschneider
  */
-@Entity
-@Data
-@NoArgsConstructor
-@RequiredArgsConstructor
-public class WeavedRequest {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-
-	@NonNull
-	private Integer requestIdentifier;
+@Qualifier
+public @interface RequestIdentifier {
 }

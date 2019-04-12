@@ -15,33 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package net.officefloor.demo.entity;
+package net.officefloor.demo;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import net.officefloor.demo.entity.WeavedRequest;
+import net.officefloor.demo.entity.WeavedRequestRepository;
+import net.officefloor.plugin.section.clazz.NextFunction;
+import net.officefloor.plugin.variable.Out;
+import net.officefloor.plugin.variable.Val;
 
 /**
- * Request {@link Entity}.
+ * Registers the request.
  * 
  * @author Daniel Sagenschneider
  */
-@Entity
-@Data
-@NoArgsConstructor
-@RequiredArgsConstructor
-public class WeavedRequest {
+public class RegisterRequestService {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
-
-	@NonNull
-	private Integer requestIdentifier;
+	@NextFunction("registered")
+	public void registerRequest(@RequestIdentifier @Val int requestIdentifier, WeavedRequestRepository repository,
+			Out<WeavedRequest> weavedRequest) {
+		WeavedRequest entity = new WeavedRequest(requestIdentifier);
+		repository.save(entity);
+		weavedRequest.set(entity);
+	}
 }
