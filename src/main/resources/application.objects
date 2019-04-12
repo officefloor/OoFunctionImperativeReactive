@@ -4,4 +4,6 @@
 		<property name="configuration.class" value="net.officefloor.demo.SpringSetup" />
 	</supplier>
 
+	<managed-object source="net.officefloor.spring.webclient.WebClientManagedObjectSource" />
+
 </objects>

@@ -17,14 +17,21 @@
  */
 package net.officefloor.demo;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import net.officefloor.plugin.managedfunction.clazz.Qualifier;
 import net.officefloor.plugin.variable.VariableManagedObjectSource;
 
 /**
- * Request identifier {@link VariableManagedObjectSource}.
+ * Thread per request response {@link VariableManagedObjectSource}.
  * 
  * @author Daniel Sagenschneider
  */
 @Qualifier
-public @interface RequestIdentifier {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+public @interface ThreadPerRequestResponse {
 }

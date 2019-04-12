@@ -1,6 +1,5 @@
 const HttpException = Java.type("net.officefloor.server.http.HttpException");
 const Integer = Java.type("java.lang.Integer")
-const RequestIdentifier = Java.type("net.officefloor.demo.RequestIdentifier")
 
 function validate(identifier, requestIdentifier) {
 	if (Number(identifier) <= 0) {
@@ -10,6 +9,6 @@ function validate(identifier, requestIdentifier) {
 }
 validate.officefloor = [ 
 	{ httpPathParameter: "identifier" },
-	{ out: Integer, qualifier: RequestIdentifier },
+	{ out: Integer },
 	{ next : "valid" }
 ];

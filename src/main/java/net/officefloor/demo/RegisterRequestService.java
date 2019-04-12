@@ -31,7 +31,7 @@ import net.officefloor.plugin.variable.Val;
 public class RegisterRequestService {
 
 	@NextFunction("registered")
-	public void registerRequest(@RequestIdentifier @Val int requestIdentifier, WeavedRequestRepository repository,
+	public void registerRequest(@Val int requestIdentifier, WeavedRequestRepository repository,
 			Out<WeavedRequest> weavedRequest) {
 		WeavedRequest entity = new WeavedRequest(requestIdentifier);
 		repository.save(entity);

@@ -6,8 +6,10 @@ import net.officefloor.web.ObjectResponse;
 
 public class Send {
 
-	public void send(@RequestIdentifier @Val int requestIdentifier, @Val WeavedRequest request,
+	public void send(@Val WeavedRequest request, @EventLoopResponse @Val ServicedThreadResponse eventLoopResponse,
+			@ThreadPerRequestResponse @Val ServicedThreadResponse threadPerRequestResponse,
 			ObjectResponse<WeavedResponse> response) {
-		response.send(new WeavedResponse(requestIdentifier, request.getId()));
+		response.send(new WeavedResponse(request.getRequestIdentifier(), request.getId(), eventLoopResponse,
+				threadPerRequestResponse));
 	}
 }

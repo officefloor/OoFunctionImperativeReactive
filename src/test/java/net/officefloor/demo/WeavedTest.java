@@ -91,6 +91,18 @@ public class WeavedTest {
 		this.doRequest(10, (response) -> assertEquals("Incorrect request number", 1, response.getRequestNumber()));
 	}
 
+	@Test
+	public void returnEventLoopResponse() throws Exception {
+		this.doRequest(10, (response) -> assertEquals("Incorrect event loop result", "Event",
+				response.getEventLoopResponse().getLookupName()));
+	}
+
+	@Test
+	public void returnThreadPerRequestResponse() throws Exception {
+		this.doRequest(10, (response) -> assertEquals("Incorrect thread-per-request result", "One",
+				response.getThreadPerRequestResponse().getLookupName()));
+	}
+
 	private WeavedResponse doRequest(int identifier, Consumer<WeavedResponse> validator) throws Exception {
 		HttpPost post = new HttpPost(this.client.url("/weave/" + identifier));
 		HttpResponse response = this.client.execute(post);

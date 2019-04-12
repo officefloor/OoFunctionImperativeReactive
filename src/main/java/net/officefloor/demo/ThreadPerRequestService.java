@@ -13,7 +13,8 @@ public class ThreadPerRequestService {
 
 	public void service(ServicedThreadRequest request, ThreadPerRequestRepository repository,
 			ObjectResponse<ServicedThreadResponse> response) {
-		ThreadPerRequest entity = repository.findById(request.getIdentifier()).get();
+		int identifier = request.getIdentifier() % 10;
+		ThreadPerRequest entity = repository.findById(identifier).get();
 		response.send(new ServicedThreadResponse(Thread.currentThread().getName(), entity.getName()));
 	}
 }
