@@ -41,6 +41,10 @@
 			<artifactId>officepolyglot_kotlin</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>net.officefloor.polyglot</groupId>
+			<artifactId>officepolyglot_scala</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.officefloor.spring</groupId>
 			<artifactId>officespring_webclient</artifactId>
 		</dependency>
@@ -93,6 +97,20 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>4.0.1</version>
+				<executions>
+					<execution>
+						<id>scala-compile</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>3.0.0</version>
@@ -106,6 +124,7 @@
 						<configuration>
 							<sources>
 								<source>src/main/kotlin</source>
+								<source>src/main/scala</source>
 							</sources>
 						</configuration>
 					</execution>
@@ -128,5 +147,39 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											net.alchim31.maven
+										</groupId>
+										<artifactId>
+											scala-maven-plugin
+										</artifactId>
+										<versionRange>
+											[4.0.1,)
+										</versionRange>
+										<goals>
+											<goal>compile</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>

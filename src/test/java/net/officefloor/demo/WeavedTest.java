@@ -18,6 +18,7 @@
 package net.officefloor.demo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.function.Consumer;
 
@@ -108,6 +109,19 @@ public class WeavedTest {
 			for (int i = 0; i < 10; i++) {
 				assertEquals("Incorrect event", "One", response.getThreadPerRequestResponses()[i].getLookupName());
 			}
+		});
+	}
+
+	@Test
+	public void returnStandardDeviation() throws Exception {
+		long startTimestamp = System.currentTimeMillis();
+		this.doRequest(10, (response) -> {
+			long serviceTime = System.currentTimeMillis() - startTimestamp;
+			
+			System.out.println("STDEV: " + response.getStandardDeviation());
+			
+			assertTrue("Standard deviation lower than service time (stdev: " + response.getStandardDeviation()
+					+ ", service: " + serviceTime + ")", response.getStandardDeviation() <= serviceTime);
 		});
 	}
 

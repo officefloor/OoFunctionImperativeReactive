@@ -18,19 +18,26 @@
     <section name="EventLoop" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.EventLoopService" x="322" y="85">
       <input name="service" parameter-type=""/>
     </section>
-    <section name="Reactive" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ReactiveService" x="801" y="258">
-      <input name="retrieveData" parameter-type=""/>
-      <output name="useData" argument-type="">
+    <section name="Functional" source="net.officefloor.polyglot.scala.ScalaFunctionSectionSource" location="net.officefloor.demo.StandardDeviationService$" x="1052" y="257">
+      <property name="function.name" value="standardDeviation"/>
+      <input name="standardDeviation" parameter-type=""/>
+      <output name="use" argument-type="double">
         <section name="Send" input="send"/>
       </output>
     </section>
-    <section name="RegisterRequest" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.RegisterRequestService" x="521" y="259">
+    <section name="Imperative" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.RegisterRequestService" x="521" y="259">
       <input name="registerRequest" parameter-type=""/>
       <output name="registered" argument-type="">
         <section name="Reactive" input="retrieveData"/>
       </output>
     </section>
-    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1050" y="257">
+    <section name="Reactive" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ReactiveService" x="801" y="258">
+      <input name="retrieveData" parameter-type=""/>
+      <output name="useData" argument-type="">
+        <section name="Functional" input="standardDeviation"/>
+      </output>
+    </section>
+    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1310" y="257">
       <input name="send" parameter-type=""/>
     </section>
     <section name="ThreadPerRequest" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ThreadPerRequestService" x="320" y="167">
@@ -40,7 +47,7 @@
       <property name="function.name" value="validate"/>
       <input name="validate" parameter-type=""/>
       <output name="valid" argument-type="">
-        <section name="RegisterRequest" input="registerRequest"/>
+        <section name="Imperative" input="registerRequest"/>
       </output>
     </section>
   </sections>
