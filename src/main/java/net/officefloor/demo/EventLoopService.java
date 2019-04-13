@@ -27,6 +27,7 @@ import net.officefloor.web.ObjectResponse;
 public class EventLoopService {
 
 	public void service(ObjectResponse<ServicedThreadResponse> response) {
-		response.send(new ServicedThreadResponse(Thread.currentThread().getName(), "Event"));
+		response.send(
+				new ServicedThreadResponse(Thread.currentThread().getName(), "Event", System.currentTimeMillis()));
 	}
 }

@@ -15,6 +15,7 @@ public class ThreadPerRequestService {
 			ObjectResponse<ServicedThreadResponse> response) {
 		int identifier = request.getIdentifier() % 10;
 		ThreadPerRequest entity = repository.findById(identifier).get();
-		response.send(new ServicedThreadResponse(Thread.currentThread().getName(), entity.getName()));
+		response.send(new ServicedThreadResponse(Thread.currentThread().getName(), entity.getName(),
+				System.currentTimeMillis()));
 	}
 }

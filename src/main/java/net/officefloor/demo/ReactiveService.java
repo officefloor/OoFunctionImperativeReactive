@@ -25,6 +25,7 @@ import net.officefloor.frame.api.function.AsynchronousFlow;
 import net.officefloor.plugin.section.clazz.NextFunction;
 import net.officefloor.plugin.variable.Out;
 import net.officefloor.plugin.variable.Val;
+import reactor.core.publisher.Flux;
 
 /**
  * Reactive service.
@@ -37,17 +38,21 @@ public class ReactiveService {
 
 	@NextFunction("useData")
 	public void retrieveData(WebClient client, AsynchronousFlow eventLoopFlow,
-			@EventLoopResponse Out<ServicedThreadResponse> eventLoopResponse, @Val WeavedRequest request,
+			@EventLoopResponse Out<ServicedThreadResponse[]> eventLoopResponse, @Val WeavedRequest request,
 			AsynchronousFlow threadPerRequestFlow,
-			@ThreadPerRequestResponse Out<ServicedThreadResponse> threadPerRequestResponse) {
+			@ThreadPerRequestResponse Out<ServicedThreadResponse[]> threadPerRequestResponse) {
 
-		client.get().uri(URL, "event-loop").retrieve().bodyToMono(ServicedThreadResponse.class)
-				.subscribe((response) -> eventLoopFlow.complete(() -> eventLoopResponse.set(response)));
+		Flux.range(1, 10)
+				.map((index) -> client.get().uri(URL, "event-loop").retrieve().bodyToMono(ServicedThreadResponse.class))
+				.flatMap((response) -> response).collectList().subscribe((responses) -> eventLoopFlow.complete(
+						() -> eventLoopResponse.set(responses.stream().toArray(ServicedThreadResponse[]::new))));
 
-		client.post().uri(URL, "thread-per-request").contentType(MediaType.APPLICATION_JSON)
-				.syncBody(new ServicedThreadRequest(request.getId())).retrieve()
-				.bodyToMono(ServicedThreadResponse.class)
-				.subscribe((response) -> threadPerRequestFlow.complete(() -> threadPerRequestResponse.set(response)));
+		Flux.range(1, 10)
+				.map((index) -> client.post().uri(URL, "thread-per-request").contentType(MediaType.APPLICATION_JSON)
+						.syncBody(new ServicedThreadRequest(request.getId())).retrieve()
+						.bodyToMono(ServicedThreadResponse.class))
+				.flatMap((response) -> response).collectList().subscribe((response) -> threadPerRequestFlow.complete(
+						() -> threadPerRequestResponse.set(response.stream().toArray(ServicedThreadResponse[]::new))));
 	}
 
 }

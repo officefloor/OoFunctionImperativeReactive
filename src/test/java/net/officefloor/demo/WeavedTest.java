@@ -93,14 +93,22 @@ public class WeavedTest {
 
 	@Test
 	public void returnEventLoopResponse() throws Exception {
-		this.doRequest(10, (response) -> assertEquals("Incorrect event loop result", "Event",
-				response.getEventLoopResponse().getLookupName()));
+		this.doRequest(10, (response) -> {
+			assertEquals("Incorrect event loop result", 10, response.getEventLoopResponses().length);
+			for (int i = 0; i < 10; i++) {
+				assertEquals("Incorrect event", "Event", response.getEventLoopResponses()[i].getLookupName());
+			}
+		});
 	}
 
 	@Test
 	public void returnThreadPerRequestResponse() throws Exception {
-		this.doRequest(10, (response) -> assertEquals("Incorrect thread-per-request result", "One",
-				response.getThreadPerRequestResponse().getLookupName()));
+		this.doRequest(10, (response) -> {
+			assertEquals("Incorrect thread-per-request result", 10, response.getThreadPerRequestResponses().length);
+			for (int i = 0; i < 10; i++) {
+				assertEquals("Incorrect event", "One", response.getThreadPerRequestResponses()[i].getLookupName());
+			}
+		});
 	}
 
 	private WeavedResponse doRequest(int identifier, Consumer<WeavedResponse> validator) throws Exception {
