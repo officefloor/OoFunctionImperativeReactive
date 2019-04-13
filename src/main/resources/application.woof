@@ -22,7 +22,7 @@
       <property name="function.name" value="standardDeviation"/>
       <input name="standardDeviation" parameter-type=""/>
       <output name="use" argument-type="double">
-        <section name="Send" input="send"/>
+        <section name="Store" input="store"/>
       </output>
     </section>
     <section name="Imperative" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.RegisterRequestService" x="521" y="259">
@@ -37,8 +37,14 @@
         <section name="Functional" input="standardDeviation"/>
       </output>
     </section>
-    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1310" y="257">
+    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1503" y="255">
       <input name="send" parameter-type=""/>
+    </section>
+    <section name="Store" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.StoreStandardDeviationService" x="1305" y="257">
+      <input name="store" parameter-type="double"/>
+      <output name="stored" argument-type="">
+        <section name="Send" input="send"/>
+      </output>
     </section>
     <section name="ThreadPerRequest" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ThreadPerRequestService" x="320" y="167">
       <input name="service" parameter-type=""/>

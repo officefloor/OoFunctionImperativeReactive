@@ -18,6 +18,7 @@
 package net.officefloor.demo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.function.Consumer;
@@ -36,6 +37,9 @@ import org.junit.rules.RuleChain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 
+import net.officefloor.demo.entity.RequestStandardDeviation;
+import net.officefloor.demo.entity.WeavedRequest;
+import net.officefloor.demo.entity.WeavedRequestRepository;
 import net.officefloor.server.http.HttpClientRule;
 import net.officefloor.server.http.HttpException;
 import net.officefloor.spring.test.SpringRule;
@@ -117,11 +121,21 @@ public class WeavedTest {
 		long startTimestamp = System.currentTimeMillis();
 		this.doRequest(10, (response) -> {
 			long serviceTime = System.currentTimeMillis() - startTimestamp;
-			
-			System.out.println("STDEV: " + response.getStandardDeviation());
-			
 			assertTrue("Standard deviation lower than service time (stdev: " + response.getStandardDeviation()
 					+ ", service: " + serviceTime + ")", response.getStandardDeviation() <= serviceTime);
+		});
+	}
+
+	@Test
+	public void storeResults() throws Exception {
+		this.doRequest(10, (response) -> {
+			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
+			WeavedRequest request = repository.findById(response.getRequestNumber()).get();
+			assertNotNull("Should have request", request);
+			RequestStandardDeviation standardDeviation = request.getRequestStandardDeviation();
+			assertNotNull("Should have standard deviation", standardDeviation);
+			assertEquals("Incorrect standard deviation", response.getStandardDeviation(),
+					standardDeviation.getStandardDeviation(), 0.0001);
 		});
 	}
 
