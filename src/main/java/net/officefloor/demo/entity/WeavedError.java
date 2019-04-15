@@ -17,11 +17,11 @@
  */
 package net.officefloor.demo.entity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
 import lombok.Data;
@@ -30,7 +30,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Request {@link Entity}.
+ * Weaved error {@link Entity}.
  * 
  * @author Daniel Sagenschneider
  */
@@ -38,19 +38,17 @@ import lombok.RequiredArgsConstructor;
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
-public class WeavedRequest {
+public class WeavedError {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
 	@NonNull
-	private Integer requestIdentifier;
+	private String message;
 
-	@OneToOne(mappedBy = "weavedRequest", cascade = CascadeType.ALL)
-	private RequestStandardDeviation requestStandardDeviation;
-
-	@OneToOne(mappedBy = "weavedRequest", cascade = CascadeType.ALL)
-	private WeavedError weavedError;
-
+	@NonNull
+	@OneToOne
+	@JoinColumn(name = "REQUEST_ID")
+	private WeavedRequest weavedRequest;
 }

@@ -18,9 +18,12 @@
 package net.officefloor.demo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.sql.DataSource;
@@ -38,6 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 
 import net.officefloor.demo.entity.RequestStandardDeviation;
+import net.officefloor.demo.entity.WeavedError;
 import net.officefloor.demo.entity.WeavedRequest;
 import net.officefloor.demo.entity.WeavedRequestRepository;
 import net.officefloor.server.http.HttpClientRule;
@@ -130,12 +134,33 @@ public class WeavedTest {
 	public void storeResults() throws Exception {
 		this.doRequest(10, (response) -> {
 			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
-			WeavedRequest request = repository.findById(response.getRequestNumber()).get();
-			assertNotNull("Should have request", request);
-			RequestStandardDeviation standardDeviation = request.getRequestStandardDeviation();
+			WeavedRequest entity = repository.findById(response.getRequestNumber()).get();
+			assertNotNull("Should have request", entity);
+			RequestStandardDeviation standardDeviation = entity.getRequestStandardDeviation();
 			assertNotNull("Should have standard deviation", standardDeviation);
 			assertEquals("Incorrect standard deviation", response.getStandardDeviation(),
 					standardDeviation.getStandardDeviation(), 0.0001);
+		});
+	}
+
+	@Test
+	public void rollbackEscalation() throws Exception {
+		this.doErrorRequest(3, (error) -> {
+			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
+			Optional<WeavedRequest> notAvailable = repository.findById(error.getRequestNumber());
+			assertFalse("Should rollback exception", notAvailable.isPresent());
+		});
+	}
+
+	@Test
+	public void commitEscalation() throws Exception {
+		this.doErrorRequest(4, (error) -> {
+			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
+			WeavedRequest entity = repository.findById(error.getRequestNumber()).get();
+			assertNull("Should not have standard deviation", entity.getRequestStandardDeviation());
+			WeavedError weavedError = entity.getWeavedError();
+			assertNotNull("Should have weaved error", weavedError);
+			assertEquals("Incorrect error message", "4 is divisible by 4", weavedError.getMessage());
 		});
 	}
 
@@ -149,6 +174,19 @@ public class WeavedTest {
 			validator.accept(weaved);
 		}
 		return weaved;
+	}
+
+	private WeavedErrorResponse doErrorRequest(int identifier, Consumer<WeavedErrorResponse> validator)
+			throws Exception {
+		HttpPost post = new HttpPost(this.client.url("/weave/" + identifier));
+		HttpResponse response = this.client.execute(post);
+		String entity = EntityUtils.toString(response.getEntity());
+		assertEquals("Should be successful: " + entity, 200, response.getStatusLine().getStatusCode());
+		WeavedErrorResponse error = mapper.readValue(entity, WeavedErrorResponse.class);
+		if (validator != null) {
+			validator.accept(error);
+		}
+		return error;
 	}
 
 }

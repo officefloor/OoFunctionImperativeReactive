@@ -25,6 +25,12 @@
         <section name="Store" input="store"/>
       </output>
     </section>
+    <section name="HandleRollbackException" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleRollbackExceptionService" x="992" y="418">
+      <input name="handle" parameter-type="net.officefloor.demo.WeavedRollbackException"/>
+    </section>
+    <section name="HandleSpecialCases" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleSpecialCasesService" x="1594" y="255">
+      <input name="handleSpecialCase" parameter-type=""/>
+    </section>
     <section name="Imperative" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.RegisterRequestService" x="521" y="259">
       <input name="registerRequest" parameter-type=""/>
       <output name="registered" argument-type="">
@@ -37,11 +43,14 @@
         <section name="Functional" input="standardDeviation"/>
       </output>
     </section>
-    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1503" y="255">
+    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1627" y="330">
       <input name="send" parameter-type=""/>
     </section>
     <section name="Store" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.StoreStandardDeviationService" x="1305" y="257">
       <input name="store" parameter-type="double"/>
+      <output name="handleSpecialCases" argument-type="">
+        <section name="HandleSpecialCases" input="handleSpecialCase"/>
+      </output>
       <output name="stored" argument-type="">
         <section name="Send" input="send"/>
       </output>
@@ -60,10 +69,16 @@
   <securities>
   </securities>
   <governances>
+    <governance name="Transaction" source="net.officefloor.spring.data.SpringDataTransactionGovernanceSource" x="486" y="130">
+      <governance-area x="509" y="239" width="1301" height="171"/>
+    </governance>
   </governances>
   <resources>
   </resources>
   <exceptions>
+    <exception class="net.officefloor.demo.WeavedRollbackException" x="552" y="433">
+      <section name="HandleRollbackException" input="handle"/>
+    </exception>
   </exceptions>
   <starting>
   </starting>
