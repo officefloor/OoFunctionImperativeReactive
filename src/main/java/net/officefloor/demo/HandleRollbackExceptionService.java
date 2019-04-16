@@ -22,13 +22,13 @@ import net.officefloor.plugin.section.clazz.Parameter;
 import net.officefloor.web.ObjectResponse;
 
 /**
- * Handles {@link WeavedRollbackException}.
+ * Handles {@link WeavedException}.
  * 
  * @author Daniel Sagenschneider
  */
 public class HandleRollbackExceptionService {
 
-	public void handle(@Parameter WeavedRollbackException exception, ObjectResponse<WeavedErrorResponse> response) {
+	public void handle(@Parameter WeavedException exception, ObjectResponse<WeavedErrorResponse> response) {
 		WeavedRequest request = exception.getWeavedRequest();
 		response.send(new WeavedErrorResponse(request.getRequestIdentifier(), request.getId()));
 	}

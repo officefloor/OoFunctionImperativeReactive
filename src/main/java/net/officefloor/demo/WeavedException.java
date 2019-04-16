@@ -20,14 +20,20 @@ package net.officefloor.demo;
 import net.officefloor.demo.entity.WeavedRequest;
 
 /**
- * Weaved commit {@link Exception}.
+ * Weaved {@link Exception}.
  * 
  * @author Daniel Sagenschneider
  */
-public class WeavedCommitException extends WeavedException {
+public class WeavedException extends Exception {
 	private static final long serialVersionUID = 1L;
 
-	public WeavedCommitException(WeavedRequest request) {
-		super(request);
+	private WeavedRequest request;
+
+	public WeavedException(WeavedRequest request) {
+		this.request = request;
+	}
+
+	public WeavedRequest getWeavedRequest() {
+		return this.request;
 	}
 }

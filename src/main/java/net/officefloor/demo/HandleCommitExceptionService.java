@@ -17,17 +17,25 @@
  */
 package net.officefloor.demo;
 
+import net.officefloor.demo.entity.WeavedError;
 import net.officefloor.demo.entity.WeavedRequest;
+import net.officefloor.demo.entity.WeavedRequestRepository;
+import net.officefloor.plugin.section.clazz.Parameter;
+import net.officefloor.web.ObjectResponse;
 
 /**
- * Weaved commit {@link Exception}.
+ * Handles {@link WeavedException}.
  * 
  * @author Daniel Sagenschneider
  */
-public class WeavedCommitException extends WeavedException {
-	private static final long serialVersionUID = 1L;
+public class HandleCommitExceptionService {
 
-	public WeavedCommitException(WeavedRequest request) {
-		super(request);
+	public void handle(@Parameter WeavedException exception, WeavedRequestRepository repository,
+			ObjectResponse<WeavedErrorResponse> response) {
+		WeavedRequest request = exception.getWeavedRequest();
+		request.setWeavedError(
+				new WeavedError("Request Identifier (" + request.getRequestIdentifier() + ") is 4", request));
+		repository.save(request);
+		response.send(new WeavedErrorResponse(request.getRequestIdentifier(), request.getId()));
 	}
 }

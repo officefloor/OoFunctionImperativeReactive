@@ -160,7 +160,7 @@ public class WeavedTest {
 			assertNull("Should not have standard deviation", entity.getRequestStandardDeviation());
 			WeavedError weavedError = entity.getWeavedError();
 			assertNotNull("Should have weaved error", weavedError);
-			assertEquals("Incorrect error message", "4 is divisible by 4", weavedError.getMessage());
+			assertEquals("Incorrect error message", "Request Identifier (4) is 4", weavedError.getMessage());
 		});
 	}
 

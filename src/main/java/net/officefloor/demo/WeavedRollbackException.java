@@ -24,16 +24,10 @@ import net.officefloor.demo.entity.WeavedRequest;
  * 
  * @author Daniel Sagenschneider
  */
-public class WeavedRollbackException extends Exception {
+public class WeavedRollbackException extends WeavedException {
 	private static final long serialVersionUID = 1L;
 
-	private WeavedRequest request;
-
 	public WeavedRollbackException(WeavedRequest request) {
-		this.request = request;
-	}
-
-	public WeavedRequest getWeavedRequest() {
-		return this.request;
+		super(request);
 	}
 }

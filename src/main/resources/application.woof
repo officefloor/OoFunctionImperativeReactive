@@ -25,8 +25,11 @@
         <section name="Store" input="store"/>
       </output>
     </section>
+    <section name="HandleCommitException" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleCommitExceptionService" x="967" y="320">
+      <input name="handle" parameter-type="net.officefloor.demo.WeavedException"/>
+    </section>
     <section name="HandleRollbackException" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleRollbackExceptionService" x="992" y="418">
-      <input name="handle" parameter-type="net.officefloor.demo.WeavedRollbackException"/>
+      <input name="handle" parameter-type="net.officefloor.demo.WeavedException"/>
     </section>
     <section name="HandleSpecialCases" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleSpecialCasesService" x="1594" y="255">
       <input name="handleSpecialCase" parameter-type=""/>
@@ -76,7 +79,10 @@
   <resources>
   </resources>
   <exceptions>
-    <exception class="net.officefloor.demo.WeavedRollbackException" x="552" y="433">
+    <exception class="net.officefloor.demo.WeavedCommitException" x="615" y="337">
+      <section name="HandleCommitException" input="handle"/>
+    </exception>
+    <exception class="net.officefloor.demo.WeavedRollbackException" x="629" y="434">
       <section name="HandleRollbackException" input="handle"/>
     </exception>
   </exceptions>
