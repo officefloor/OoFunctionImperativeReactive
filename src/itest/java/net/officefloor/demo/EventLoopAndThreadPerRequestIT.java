@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,14 +47,14 @@ public class EventLoopAndThreadPerRequestIT {
 		mapper.registerModule(new KotlinModule());
 	}
 
-	@Rule
-	public final MockWoofServerRule server = new MockWoofServerRule();
+	@ClassRule
+	public static final MockWoofServerRule server = new MockWoofServerRule();
 
 	@Test
 	public void eventLoop() throws IOException {
 		String currentThreadName = Thread.currentThread().getName();
 		String payload = mapper.writeValueAsString(new ServicedThreadRequest(1));
-		this.doRequest(() -> this.server.send(
+		this.doRequest(() -> server.send(
 				MockWoofServer.mockRequest("/event-loop").header("Content-Type", "application/json").entity(payload)),
 				(response) -> {
 					assertEquals("Should be same thread", currentThreadName, response.getThreadName());
@@ -66,7 +66,7 @@ public class EventLoopAndThreadPerRequestIT {
 	public void threadPerRequest() throws IOException {
 		String currentThreadName = Thread.currentThread().getName();
 		String payload = mapper.writeValueAsString(new ServicedThreadRequest(1));
-		this.doRequest(() -> this.server.send(MockWoofServer.mockRequest("/thread-per-request").method(HttpMethod.POST)
+		this.doRequest(() -> server.send(MockWoofServer.mockRequest("/thread-per-request").method(HttpMethod.POST)
 				.header("Content-Type", "application/json").entity(payload)), (response) -> {
 					assertNotEquals("Should be different thread", currentThreadName, response.getThreadName());
 					assertEquals("Should look up name for identifier", "One", response.getLookupName());

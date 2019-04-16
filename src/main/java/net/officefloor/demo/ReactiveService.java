@@ -37,7 +37,7 @@ public class ReactiveService {
 	private final static String URL = "http://localhost:7878/{path}";
 
 	@NextFunction("useData")
-	public void retrieveData(WebClient client, AsynchronousFlow eventLoopFlow,
+	public static void retrieveData(WebClient client, AsynchronousFlow eventLoopFlow,
 			@EventLoopResponse Out<ServicedThreadResponse[]> eventLoopResponse, @Val WeavedRequest request,
 			AsynchronousFlow threadPerRequestFlow,
 			@ThreadPerRequestResponse Out<ServicedThreadResponse[]> threadPerRequestResponse) {

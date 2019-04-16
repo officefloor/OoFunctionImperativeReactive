@@ -17,25 +17,36 @@
  */
 package net.officefloor.demo;
 
-import net.officefloor.demo.entity.WeavedError;
-import net.officefloor.demo.entity.WeavedRequest;
-import net.officefloor.demo.entity.WeavedRequestRepository;
-import net.officefloor.plugin.section.clazz.Parameter;
-import net.officefloor.web.ObjectResponse;
+import javax.sql.DataSource;
+
+import org.flywaydb.core.Flyway;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.rules.RuleChain;
+
+import net.officefloor.spring.test.SpringRule;
+import net.officefloor.test.OfficeFloorRule;
 
 /**
- * Handles {@link WeavedException}.
+ * Provides running application with access to Spring resources.
  * 
  * @author Daniel Sagenschneider
  */
-public class HandleCommitExceptionService {
+public abstract class AbstractBaseRunning {
 
-	public static void handle(@Parameter WeavedException exception, WeavedRequestRepository repository,
-			ObjectResponse<WeavedErrorResponse> response) {
-		WeavedRequest request = exception.getWeavedRequest();
-		request.setWeavedError(
-				new WeavedError("Request Identifier (" + request.getRequestIdentifier() + ") is special case", request));
-		repository.save(request);
-		response.send(new WeavedErrorResponse(request.getRequestIdentifier(), request.getId()));
+	public static final SpringRule spring = new SpringRule();
+
+	public static final OfficeFloorRule officeFloor = new OfficeFloorRule();
+
+	@ClassRule
+	public static final RuleChain ordered = RuleChain.outerRule(spring).around(officeFloor);
+
+	@Before
+	public void resetDatabase() {
+		DataSource dataSource = spring.getBean(DataSource.class);
+		Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+		flyway.clean();
+		flyway.migrate();
 	}
+
 }

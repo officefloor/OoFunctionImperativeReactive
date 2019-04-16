@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
 import org.flywaydb.core.Flyway;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -57,12 +58,12 @@ import net.officefloor.web.json.JacksonHttpObjectResponderFactory;
  */
 public class WeavedIT {
 
-	public final SpringRule spring = new SpringRule();
+	public static final SpringRule spring = new SpringRule();
 
-	public final OfficeFloorRule officeFloor = new OfficeFloorRule();
+	public static final OfficeFloorRule officeFloor = new OfficeFloorRule();
 
-	@Rule
-	public final RuleChain ordered = RuleChain.outerRule(this.spring).around(this.officeFloor);
+	@ClassRule
+	public static final RuleChain ordered = RuleChain.outerRule(spring).around(officeFloor);
 
 	@Rule
 	public final HttpClientRule client = new HttpClientRule();
@@ -74,7 +75,7 @@ public class WeavedIT {
 
 	@Before
 	public void resetDatabase() {
-		DataSource dataSource = this.spring.getBean(DataSource.class);
+		DataSource dataSource = spring.getBean(DataSource.class);
 		Flyway flyway = Flyway.configure().dataSource(dataSource).load();
 		flyway.clean();
 		flyway.migrate();
@@ -133,7 +134,7 @@ public class WeavedIT {
 	@Test
 	public void storeResults() throws Exception {
 		this.doRequest(10, (response) -> {
-			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
+			WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
 			WeavedRequest entity = repository.findById(response.getRequestNumber()).get();
 			assertNotNull("Should have request", entity);
 			RequestStandardDeviation standardDeviation = entity.getRequestStandardDeviation();
@@ -146,7 +147,7 @@ public class WeavedIT {
 	@Test
 	public void rollbackEscalation() throws Exception {
 		this.doErrorRequest(3, (error) -> {
-			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
+			WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
 			Optional<WeavedRequest> notAvailable = repository.findById(error.getRequestNumber());
 			assertFalse("Should rollback exception", notAvailable.isPresent());
 		});
@@ -155,12 +156,12 @@ public class WeavedIT {
 	@Test
 	public void commitEscalation() throws Exception {
 		this.doErrorRequest(4, (error) -> {
-			WeavedRequestRepository repository = this.spring.getBean(WeavedRequestRepository.class);
+			WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
 			WeavedRequest entity = repository.findById(error.getRequestNumber()).get();
 			assertNull("Should not have standard deviation", entity.getRequestStandardDeviation());
 			WeavedError weavedError = entity.getWeavedError();
 			assertNotNull("Should have weaved error", weavedError);
-			assertEquals("Incorrect error message", "Request Identifier (4) is 4", weavedError.getMessage());
+			assertEquals("Incorrect error message", "Request Identifier (4) is special case", weavedError.getMessage());
 		});
 	}
 

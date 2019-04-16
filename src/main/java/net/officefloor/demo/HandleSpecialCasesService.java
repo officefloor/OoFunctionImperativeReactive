@@ -27,7 +27,7 @@ import net.officefloor.plugin.variable.Val;
  */
 public class HandleSpecialCasesService {
 
-	public void handleSpecialCase(@Val WeavedRequest request) throws WeavedRollbackException, WeavedCommitException {
+	public static void handleSpecialCase(@Val WeavedRequest request) throws WeavedRollbackException, WeavedCommitException {
 		switch (request.getRequestIdentifier()) {
 		case 3:
 			throw new WeavedRollbackException(request);

@@ -17,25 +17,34 @@
  */
 package net.officefloor.demo;
 
-import net.officefloor.demo.entity.WeavedError;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
 import net.officefloor.demo.entity.WeavedRequest;
-import net.officefloor.demo.entity.WeavedRequestRepository;
-import net.officefloor.plugin.section.clazz.Parameter;
-import net.officefloor.web.ObjectResponse;
+import net.officefloor.woof.mock.MockObjectResponse;
 
 /**
- * Handles {@link WeavedException}.
+ * Tests the {@link HandleRollbackExceptionService}.
  * 
  * @author Daniel Sagenschneider
  */
-public class HandleCommitExceptionService {
+public class HandleRollbackExceptionServiceTest {
 
-	public static void handle(@Parameter WeavedException exception, WeavedRequestRepository repository,
-			ObjectResponse<WeavedErrorResponse> response) {
-		WeavedRequest request = exception.getWeavedRequest();
-		request.setWeavedError(
-				new WeavedError("Request Identifier (" + request.getRequestIdentifier() + ") is special case", request));
-		repository.save(request);
-		response.send(new WeavedErrorResponse(request.getRequestIdentifier(), request.getId()));
+	@Test
+	public void ensureResponseWithError() {
+		MockObjectResponse<WeavedErrorResponse> response = new MockObjectResponse<>();
+
+		// Create request
+		WeavedRequest request = new WeavedRequest(10);
+		request.setId(1);
+
+		// Service
+		HandleRollbackExceptionService.handle(new WeavedCommitException(request), response);
+
+		// Ensure correct response
+		WeavedErrorResponse error = response.getObject();
+		assertEquals("Incorrect request", 10, error.getRequestIdentifier());
+		assertEquals("Incorrect identifier", 1, error.getRequestNumber());
 	}
 }

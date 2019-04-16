@@ -20,8 +20,8 @@ package net.officefloor.demo;
 import net.officefloor.demo.entity.RequestStandardDeviation;
 import net.officefloor.demo.entity.WeavedRequest;
 import net.officefloor.demo.entity.WeavedRequestRepository;
-import net.officefloor.frame.api.function.FlowCallback;
 import net.officefloor.plugin.managedfunction.clazz.FlowInterface;
+import net.officefloor.plugin.managedfunction.clazz.FlowSuccessful;
 import net.officefloor.plugin.section.clazz.Parameter;
 import net.officefloor.plugin.variable.Out;
 import net.officefloor.plugin.variable.Val;
@@ -35,20 +35,14 @@ public class StoreStandardDeviationService {
 
 	@FlowInterface
 	public static interface Flows {
-		void handleSpecialCases(FlowCallback callback);
+		void handleSpecialCases(FlowSuccessful callback);
 
 		void stored();
 	}
 
-	public void store(@Parameter double standardDeviation, Flows flows, @Val WeavedRequest request,
+	public static void store(@Parameter double standardDeviation, Flows flows, @Val WeavedRequest request,
 			WeavedRequestRepository repository, Out<RequestStandardDeviation> stDevOut) {
-		flows.handleSpecialCases((error) -> {
-
-			// TODO replace with FlowSuccessful (rather than FlowCallback)
-			if (error != null) {
-				throw error;
-			}
-
+		flows.handleSpecialCases(() -> {
 			request.setRequestStandardDeviation(new RequestStandardDeviation(standardDeviation, request));
 			repository.save(request);
 			stDevOut.set(request.getRequestStandardDeviation());

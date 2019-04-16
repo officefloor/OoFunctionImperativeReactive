@@ -28,7 +28,7 @@ import net.officefloor.web.ObjectResponse;
  */
 public class HandleRollbackExceptionService {
 
-	public void handle(@Parameter WeavedException exception, ObjectResponse<WeavedErrorResponse> response) {
+	public static void handle(@Parameter WeavedException exception, ObjectResponse<WeavedErrorResponse> response) {
 		WeavedRequest request = exception.getWeavedRequest();
 		response.send(new WeavedErrorResponse(request.getRequestIdentifier(), request.getId()));
 	}
