@@ -42,7 +42,7 @@ import reactor.core.publisher.Mono;
  * 
  * @author Daniel Sagenschneider
  */
-public class EventLoopAndThreadPerRequestThreadingTest {
+public class EventLoopAndThreadPerRequestThreadingIT {
 
 	private final static String URL = "http://localhost:7878/{path}";
 

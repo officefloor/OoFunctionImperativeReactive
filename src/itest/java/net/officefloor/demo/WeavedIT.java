@@ -55,7 +55,7 @@ import net.officefloor.web.json.JacksonHttpObjectResponderFactory;
  * 
  * @author Daniel Sagenschneider
  */
-public class WeavedTest {
+public class WeavedIT {
 
 	public final SpringRule spring = new SpringRule();
 

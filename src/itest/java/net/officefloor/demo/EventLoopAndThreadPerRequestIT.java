@@ -40,7 +40,7 @@ import net.officefloor.woof.mock.MockWoofServerRule;
  * 
  * @author Daniel Sagenschneider
  */
-public class EventLoopAndThreadPerRequestTest {
+public class EventLoopAndThreadPerRequestIT {
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 	static {
