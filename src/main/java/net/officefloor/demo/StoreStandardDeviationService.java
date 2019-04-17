@@ -33,6 +33,7 @@ import net.officefloor.plugin.variable.Val;
  */
 public class StoreStandardDeviationService {
 
+	// START SNIPPET: tutorial
 	@FlowInterface
 	public static interface Flows {
 		void handleSpecialCases(FlowSuccessful callback);
@@ -49,4 +50,5 @@ public class StoreStandardDeviationService {
 			flows.stored();
 		});
 	}
+	// END SNIPPET: tutorial
 }

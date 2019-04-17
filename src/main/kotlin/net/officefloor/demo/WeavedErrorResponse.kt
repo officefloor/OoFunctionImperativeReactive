@@ -1,4 +1,5 @@
 package net.officefloor.demo
 
-data class WeavedErrorResponse(val requestIdentifier: Int
-							   , val requestNumber: Int)
+// START SNIPPET: tutorial
+data class WeavedErrorResponse(val requestIdentifier: Int, val requestNumber: Int)
+// END SNIPPET: tutorial

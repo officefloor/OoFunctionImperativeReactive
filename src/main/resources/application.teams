@@ -1,5 +1,3 @@
 <teams>
-
 	<team source="net.officefloor.frame.impl.spi.team.ExecutorCachedTeamSource" type="org.springframework.data.repository.CrudRepository" />
-
 </teams>

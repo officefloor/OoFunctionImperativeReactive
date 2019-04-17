@@ -26,8 +26,10 @@ import net.officefloor.web.ObjectResponse;
  */
 public class EventLoopService {
 
+	// START SNIPPET: tutorial
 	public void service(ObjectResponse<ServicedThreadResponse> response) {
 		response.send(
 				new ServicedThreadResponse(Thread.currentThread().getName(), "Event", System.currentTimeMillis()));
 	}
+	// END SNIPPET: tutorial
 }

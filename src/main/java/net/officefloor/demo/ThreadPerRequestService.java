@@ -11,6 +11,7 @@ import net.officefloor.web.ObjectResponse;
  */
 public class ThreadPerRequestService {
 
+	// START SNIPPET: tutorial
 	public void service(ServicedThreadRequest request, ThreadPerRequestRepository repository,
 			ObjectResponse<ServicedThreadResponse> response) {
 		int identifier = request.getIdentifier() % 10;
@@ -18,4 +19,5 @@ public class ThreadPerRequestService {
 		response.send(new ServicedThreadResponse(Thread.currentThread().getName(), entity.getName(),
 				System.currentTimeMillis()));
 	}
+	// END SNIPPET: tutorial
 }

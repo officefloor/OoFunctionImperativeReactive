@@ -6,13 +6,12 @@
 	<groupId>net.officefloor.demo</groupId>
 	<artifactId>OoFunctionImperativeReactive</artifactId>
 	<name>OfficeFloor OO, Function, Imperative, Reactive weaved together</name>
-	<description>Demo for TODO PROVIDE LINK TO BLOG ARTICLE</description>
+	<description>Demo and article content for First Class Procedures</description>
 	<version>1.0.0</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<basedir>${basedir}</basedir>
 		<projectVersion>${project.version}</projectVersion>
-		<officefloor.version>3.9.0</officefloor.version>
+		<officefloor.version>3.9.1</officefloor.version>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 	</properties>
@@ -104,6 +103,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
 				<executions>
 					<!-- Only use Scala compiling -->
 					<execution>
@@ -190,6 +190,11 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.7.1</version>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -226,4 +231,20 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>3.0.0</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>index</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

@@ -34,6 +34,7 @@ import reactor.core.publisher.Flux;
  */
 public class ReactiveService {
 
+	// START SNIPPET: tutorial
 	private final static String URL = "http://localhost:7878/{path}";
 
 	@NextFunction("useData")
@@ -54,5 +55,6 @@ public class ReactiveService {
 				.flatMap((response) -> response).collectList().subscribe((response) -> threadPerRequestFlow.complete(
 						() -> threadPerRequestResponse.set(response.stream().toArray(ServicedThreadResponse[]::new))));
 	}
+	// END SNIPPET: tutorial
 
 }

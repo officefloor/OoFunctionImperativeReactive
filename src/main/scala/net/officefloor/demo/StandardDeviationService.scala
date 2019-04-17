@@ -6,6 +6,7 @@ import net.officefloor.plugin.variable.Val
 
 object StandardDeviationService {
 
+  // START SNIPPET: tutorial
   def mean(timestamps: Iterable[Long]): Double = timestamps.sum.toDouble / timestamps.size
 
   def variance(timestamps: Iterable[Long]): Double = {
@@ -18,5 +19,6 @@ object StandardDeviationService {
   @NextFunction("use")
   def standardDeviation(@EventLoopResponse @Val eventLoopResponses: Array[ServicedThreadResponse], @ThreadPerRequestResponse @Val threadPerRequestResponses: Array[ServicedThreadResponse]): Double =
     stdDev((eventLoopResponses ++ threadPerRequestResponses).map(response => response.getTimestamp))
-
+  // END SNIPPET: tutorial
+    
 }

@@ -58,6 +58,7 @@ import net.officefloor.web.json.JacksonHttpObjectResponderFactory;
  */
 public class WeavedIT {
 
+	// START SNIPPET: tutorial
 	public static final SpringRule spring = new SpringRule();
 
 	public static final OfficeFloorRule officeFloor = new OfficeFloorRule();
@@ -72,6 +73,16 @@ public class WeavedIT {
 	static {
 		mapper.registerModule(new KotlinModule());
 	}
+
+	@Test
+	public void confirmWeavedTogether() throws Exception {
+		HttpResponse response = this.client.execute(new HttpPost(this.client.url("/weave/1")));
+		assertEquals("Should be successful", 200, response.getStatusLine().getStatusCode());
+		WeavedResponse body = mapper.readValue(EntityUtils.toString(response.getEntity()), WeavedResponse.class);
+		WeavedRequest entity = spring.getBean(WeavedRequestRepository.class).findById(body.getRequestNumber()).get();
+		assertNotNull("Should have standard deviation stored", entity.getRequestStandardDeviation());
+	}
+	// END SNIPPET: tutorial
 
 	@Before
 	public void resetDatabase() {

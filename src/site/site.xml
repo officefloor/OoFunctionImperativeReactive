@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<bannerLeft>
+		<name>OfficeFloor</name>
+		<src>http://www.officefloor.net/images/OfficeFloorBannerImage.png</src>
+		<href>http://www.officefloor.net/</href>
+	</bannerLeft>
+	<publishDate position="right" />
+	<version position="right" />
+	<skin>
+		<groupId>org.apache.maven.skins</groupId>
+		<artifactId>maven-fluido-skin</artifactId>
+		<version>1.5</version>
+	</skin>
+	<custom>
+		<fluidoSkin>
+			<sourceLineNumbersEnabled>false</sourceLineNumbersEnabled>
+			<copyrightClass>pull-right</copyrightClass>
+			<gitHub>
+				<projectId>sagenschneider/OoFunctionImperativeReactive</projectId>
+				<ribbonOrientation>right</ribbonOrientation>
+				<ribbonColor>green</ribbonColor>
+			</gitHub>
+		</fluidoSkin>
+	</custom>
+	<body>
+		<menu name="Articles">
+			<item name="OO Functional Imperative Reactive weaved together"
+				href="./OoFunctionImperativeReactiveWeavedTogether.html" />
+			<item name="Function IoC for First Class Procedure"
+				href="./FunctionIocForFirstClassProcedure.html" />
+		</menu>
+	</body>
+</project>

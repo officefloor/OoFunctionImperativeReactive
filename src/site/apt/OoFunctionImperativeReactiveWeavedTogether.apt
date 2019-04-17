@@ -1,0 +1,194 @@
+				       ------------------
+	     OO Functional Imperative Reactive weaved together
+				       ------------------
+				      Daniel Sagenschneider
+				       ------------------
+
+  This is first of a two part article to discuss the "First Class Procedure", a term I'm using to best describe the concept.
+
+  While Functional Programming provides composition through first class functions and Object Orientation provides composition through objects, first class procedures are to me a fusion of the two concepts.  For me, first class procedures make composition concerns a lot more explicit, while also separating concerns of state, composition and execution.  I find Object Orientation suffers issues of implicit object references (e.g. wanting a banana and getting the gorilla with the jungle), while functional programming suffers issues of implicit threads.  The first class procedures tackles these issues, so that composition is a separate concern to managing state, along with also isolating out execution strategies.
+
+  Now to write a complete description of the first class procedure is beyond a single article.  There are many patterns used together to enable the composition through first class procedures.  Therefore, I'm going to provide an introduction to first class procedures in two parts:
+
+   * This article to demonstrate with working code how flexible and easy composition is with first class procedures
+
+   * {{{./FunctionIocForFirstClassProcedure.html}Next article}} to provide an explanation more closely aligned to the theory on how the first class procedure has evolved to its current understanding
+
+  We'll start with some simple examples and then get to the more interesting weaving together of first class procedures.
+
+
+
+Single first class procedure examples
+
+*Simple event loop
+
+  This following first class procedure services a HTTP request.  This will be run on the HTTP socket event loop thread.
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/EventLoopService.java|ignoreDownloadError=false}
+
+
+*Simple thread-per-request
+
+  The following first class procedure services a HTTP request by pulling a value from the database and sending in the response.  This will be run by a separate thread pool.
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/ThreadPerRequestService.java|ignoreDownloadError=false}
+  
+  The distinction of thread to use will be discussed later.  However, for now notice that a Spring Repository is used by only the thread-per-request first class procedure.
+
+
+
+First Class Procedures weaved together example
+
+  Ok, the above is little boring.  We've seen this in web application servers before.  Show us something interesting!
+
+  To show something more interesting we are going to weave first class procedures together to achieve the following:
+  
+   [[1]] Validate a request (on socket event loop thread).
+   
+   [[1]] Start a transaction and register the request in the database.  This will be on another thread to avoid halting the socket event loop.
+   
+   [[1]] Make reactive calls to pull in data from other services.
+   
+   [[1]] Run some functional code to work out the standard deviation on service times.
+
+   [[1]] Undertake alternate flows to handle special cases (including handling exceptions).  Then if no special cases, store results in the database.  This again is on a different thread to not tie up the reactive event loop.
+
+   [[1]] Send the response after committing the transaction
+
+  We'll address each first class procedure in the order above.
+
+
+*Validate request (on socket event loop)
+
+  This is simple validation that the request is correct.  As it is straight forward logic, we use the thread of the socket event loop.  This way we don't have to pay overheads of thread context switch and threading overheads to reject invalid requests.  The code is as follows:
+
+%{snippet|file=./src/main/resources/net/officefloor/demo/Validate.js|ignoreDownloadError=false}
+
+  Note that the validation is written in JavaScript.  This is so that the client side JavaScript validation rules can be re-used to validate requests to ensure consistency between client and server.
+
+  The <<<officefloor>>> attribute added to the function provides meta-data.  This is necessary, as JavaScript does not provide the strongly typed information required of first class procedures.
+
+
+*Imperative to register request in database
+
+  The request identifier is registered in the database.  This also creates a unique number for the request based on an IDENTITY column in the database.
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/RegisterRequestService.java|ignoreDownloadError=false}
+
+
+*Reactive
+
+  The next is some Reactive code to concurrently call the two REST end points detailed at the start of this article (simple event loop and simple thread-per-request).   Because we are using Reactive we can call them concurrently to improve performance.
+
+  Note that while waiting on the responses, the flow is effectively idle with threads servicing other functionality.  This is asynchronous handling so that threads are not tied up waiting.   Once both sets of results come back, they notify the asynchronous flow to continue processing.
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/ReactiveService.java|ignoreDownloadError=false}
+
+  By now you may be noticing the <<<Out>>>/<<<@Val>>> combinations.  This is how values can be passed from one first class procedure to another first class procedure.  Note that if type for different values is the same, a qualifier can be used to distinguish them.
+
+
+*Functional
+
+  The next sends the previous reactive queried results to Scala code to determine the standard deviation of service times.
+
+%{snippet|id=tutorial|file=./src/main/scala/net/officefloor/demo/StandardDeviationService.scala|ignoreDownloadError=false}
+
+  Note that a library could be used to reduce this code.  However, we've done this to demonstrate how functional code can be integrated into first class procedures.
+
+
+*Flow control
+
+  The next first class procedure triggers a flow to handle special cases.  Should there be no issues with the special cases, then it stores the standard deviation in the database.
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/StoreStandardDeviationService.java|ignoreDownloadError=false}
+
+  The handling of the special cases is by the following first class procedure.
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/HandleSpecialCasesService.java|ignoreDownloadError=false}
+
+
+*Touch of exception handling
+
+  The two exception handling first class procedures are as follows.
+  
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/HandleRollbackExceptionService.java|ignoreDownloadError=false}
+
+%{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/HandleCommitExceptionService.java|ignoreDownloadError=false}
+
+  The second handler works within the transaction, so includes further data stored in the database.
+
+  Note that due to first class procedure composition not requiring the caller to catch exceptions, checked exceptions are embraced.  We consider checked exceptions very useful information in flow composition.  However, the distinction is that it should not be the caller's concern but rather the flow's concern.  To me this is a big difference and stops the catch and log exception handling problem.   Exception handling is now a separate concern that can be coded in afterwards.
+
+
+*Kotlin for some OO
+
+  Oh, and just for a little bit more polyglot fun and not leave out the new comer, the OO objects used to represent the JSON request/responses are the following.
+
+%{snippet|id=tutorial|file=./src/main/kotlin/net/officefloor/demo/ServicedThreadRequest.kt|ignoreDownloadError=false}
+%{snippet|id=tutorial|file=./src/main/kotlin/net/officefloor/demo/ServicedThreadResponse.kt|ignoreDownloadError=false}
+%{snippet|id=tutorial|file=./src/main/kotlin/net/officefloor/demo/WeavedErrorResponse.kt|ignoreDownloadError=false}
+%{snippet|id=tutorial|file=./src/main/kotlin/net/officefloor/demo/WeavedResponse.kt|ignoreDownloadError=false}
+
+
+*Proving it works
+
+  The following is the test to confirm the flow of first class procedures services the request.
+
+%{snippet|id=tutorial|file=./src/itest/java/net/officefloor/demo/WeavedIT.java|ignoreDownloadError=false}
+
+
+Weaving together
+
+  The following diagram is the configuration to weave the above first class procedures together.
+
+  TODO: diagram of all three above together
+  
+  This is the only configuration necessary to weave the first class procedures together.
+
+  What this means, is check the port on the all the calls and tests.  Yes, everything you see above is running off the one port.  Yep, you don't have to choose between a framework that provides only thread-per-request or single threaded event loops.  This is because of execution strategy configuration provided by Thread Injection.
+
+
+Thread Injection
+
+  The threading configuration is actually the following:
+
+%{snippet|file=./src/main/resources/application.teams|ignoreDownloadError=false}
+
+  Here we flag all procedures requiring a Spring Repository to be executed by a thread pool.  Remember I said keep note of use of Spring Repository.  Well the above configuration has any first class procedure requiring a Spring Repository executed by a thread pool.
+  
+  Now, we can happily add further thread pools for other procedures by adding the particular input dependency to the configuration.  In other words, write the procedures with unit testing not worrying about threading issues.  Weave them together and then configure the appropriate threading.  See this article for more details.
+
+  Therefore, looking at the flow again, the thread execution is as follows:
+
+  TODO: diagram with numbers to identify threading change points
+
+   [[1]] Uses the thread of the event loop of socket listener
+
+   [[1]] Uses the thread pool assigned to repository to collect the data
+
+   [[1]] Carries onto trigger the asynchronous calls to the two services with the thread from the repository thread pool
+
+   [[1]] Callback thread of AsyncHttp then carries on to call the Scala pure function to determine the result.  Here it is deemed that a thread context switch is too much overhead, and it is more efficient to just invoke the highly optimised Scala pure function.  However, if we want to separate to different thread pool, can just add a marker dependency that we then configure into the above Thread Injection configuration to have the Scala function executed by different thread pool.
+
+   [[1]] The remaining imperative code has a switch back to a thread from the repository thread pool to do the synchronous database operations.  Furthermore, OfficeFloor propagates the thread locals between the threads so the Spring Repository thread local transaction context is not lost (i.e. transaction is active for all boxes within the transaction bounds).
+
+   [[1]] Response is then sent to the wire (and if network buffer over full), the socket's event loop thread will be responsible for writing the buffered response data to the network.
+
+  Now all the above is configurable via Thread Injection.  If we have, for example, more than one synchronous data store, we can create a thread pool to interact with each data store to avoid one slow data store tying up all threads of the application.  This also means you can configure different threading for different environments without having to change any code.
+
+
+
+Disclaimer
+
+  In a real world applications, I would try to avoid so many of the above programming languages together.  I'd try to streamline them to just a couple to avoid too many skill sets involved driving up maintenance costs of your application (plus reduces problems for mixed compiling).  This is only a demonstration of how OO, Functional, Imperative and Reactive code can all be weaved together.  Furthermore, it allows you to write concrete solutions before abstracting (TODO reference other article).
+
+  Also, as you can see I've had to cover a lot of breadth in each programming paradigm.  If the code is not a good representation of the paradigm, I'm very happy to take feedback on improvements from those more acquainted with a particular paradigm.
+
+  And if I've missed an important paradigm, please let me know so I can consider including it.  When it comes to coding I appreciate diversity to give developers choice.  I'm trying to tear down fences between the paradigms to have one big happy coding family (though tell me if I'm coming on too strong?)
+
+
+Summary
+
+  We've demonstrated how the first class procedure can weave together polyglot code written in different paradigms to service a request.  The code outlined above in the article is all the code required for the application.  There is no further weaving code required.
+
+  Furthermore, to avoid the problems of it works only on my machine (in my article), the code for the above is available to download from here.  See the readme on how to run it.  For more understanding of what's going on, see the tutorials (TODO link to tutorials), my other articles and in particular my next article.

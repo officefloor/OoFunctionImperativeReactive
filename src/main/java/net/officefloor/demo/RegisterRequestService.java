@@ -30,6 +30,7 @@ import net.officefloor.plugin.variable.Val;
  */
 public class RegisterRequestService {
 
+	// START SNIPPET: tutorial
 	@NextFunction("registered")
 	public static void registerRequest(@Val int requestIdentifier, WeavedRequestRepository repository,
 			Out<WeavedRequest> weavedRequest) {
@@ -37,4 +38,5 @@ public class RegisterRequestService {
 		repository.save(entity);
 		weavedRequest.set(entity);
 	}
+	// END SNIPPET: tutorial
 }

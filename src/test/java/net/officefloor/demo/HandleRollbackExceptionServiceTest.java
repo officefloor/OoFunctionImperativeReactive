@@ -40,7 +40,7 @@ public class HandleRollbackExceptionServiceTest {
 		request.setId(1);
 
 		// Service
-		HandleRollbackExceptionService.handle(new WeavedCommitException(request), response);
+		HandleRollbackExceptionService.handle(new WeavedRollbackException(request), response);
 
 		// Ensure correct response
 		WeavedErrorResponse error = response.getObject();

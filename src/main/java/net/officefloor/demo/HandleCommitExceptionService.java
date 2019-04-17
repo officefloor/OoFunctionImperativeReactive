@@ -30,7 +30,8 @@ import net.officefloor.web.ObjectResponse;
  */
 public class HandleCommitExceptionService {
 
-	public static void handle(@Parameter WeavedException exception, WeavedRequestRepository repository,
+	// START SNIPPET: tutorial
+	public static void handle(@Parameter WeavedCommitException exception, WeavedRequestRepository repository,
 			ObjectResponse<WeavedErrorResponse> response) {
 		WeavedRequest request = exception.getWeavedRequest();
 		request.setWeavedError(
@@ -38,4 +39,5 @@ public class HandleCommitExceptionService {
 		repository.save(request);
 		response.send(new WeavedErrorResponse(request.getRequestIdentifier(), request.getId()));
 	}
+	// END SNIPPET: tutorial
 }
