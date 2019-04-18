@@ -1,7 +1,257 @@
 				       ------------------
-	     OO Functional Imperative Reactive weaved together
+	         Function IoC for First Class Procedure
 				       ------------------
 				      Daniel Sagenschneider
 				       ------------------
 
-  TODO write article
+  This is the second article of two to introduce the term I'm suggesting of "first class procedure".  The first article (here), provided a working example of the first class procedure to see them in action.  This article delves into the detail and some theory on how the first class procedure has evolved.
+
+  The inspiration and origins of the first class procedure started from watching how businesses are organised.   If you consider an application as a decision making system on information, you can consider an Office an application.  An Office takes in customer requests, processes information and then relays information to customers, factories, distribution chains, other Offices, etc.  It is a lot like a function of having informational inputs and producing informational outputs.  Furthermore, following the analogy you can consider people working within an Office, similar to threads of an application.  This analogy has lead to the first class procedure and is based on how businesses handle problems of scale, functional break down, information organisation, etc.
+
+  But understanding the analogy and seeing the practical implementation is not the same thing.  Therefore, I'm going to attempt to explain how the first class procedure has evolved.  This evolution starts with looking at the function.
+
+  Just a point of warning, I've not studied functional programming formally nor have too many functional programmers available to me to clarify these concepts (I live in a quiet town).  Much of the following is my personal research into functional programming, so functional programmers please be kind and correct my understanding where I might have interpreted the concepts incorrectly.  I developed the first class procedure through the above analogy, but I'm hoping a functional explanation helps in explaining more concretely how the first class procedure is realised.
+
+  Firstly, the function:
+
+%{snippet|id=function|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  takes in parameters to then produce the result.
+
+  However, before being able to obtain any results, the function also requires a thread to be run.   This is what I refer to as the "implicit thread".   The function does not define details regarding the thread to use, so defaults to the invoking thread of the function (the implicit thread).
+
+  Ideally, we should enhance the function signature to indicate the thread more explicitly so we can allow more control in how the composed functions are executed.  Note that the executor is means to invoke with the implicit thread or a separate explicit thread via a thread pool:
+
+%{snippet|id=invoke|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Now the thread to execute the function is made explicit on the function signature.
+
+  An argument might be that threading is hard and should be left to compilers/frameworks/etc.  However, I'm believing that I still want some control over the execution profile of the application.  A reason for this would be the following example.
+
+  I'm running a multi-user application on a large server with multiple processors that does various blocking I/O and expensive CPU computations to service a request.  I really want to optimise the CPU computations to have them have affinity to a core to avoid cache misses and thread context switching overheads.  Plus I want to isolate the blocking I/O to separate thread pool so the CPU computations do not block causing idle CPUs.  Given the load of I/O I might want to isolate one core to do all I/O leaving remaining cores free for the CPU computations.  Conversely, I might find the I/O is minimal and can time slice with the CPU computations so I can get an extra core for the CPU computations to gain increased throughput.  Ideally, I would like means to tweak this for the application.
+
+  Then requirements change and I now want to use the same application to service a single user that is running the application on a single core (e.g. a cheap portable embedded system).  In this circumstance, I'm happy for the CPU computations to block while the I/O is underway.  Basically, I just want one implicit thread to run all the functions.
+
+  In both the above, it is the same application logic but just different execution profiles for the application based on the environment it is running within.
+
+  So taking our above explicit function signature we now require to have the higher order functions provide appropriate threading information to invoke each composed function:
+
+%{snippet|id=higher|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Now the higher order function has to determine the thread for each contained function.  This can blow out the higher order function's signature.   Therefore, let's for now create a function that can determine the executor for a function based on the function being executed:
+
+%{snippet|id=executorLocator|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  So this now changes the higher order function to be:
+
+%{snippet|id=higherWithLocator|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  So we've stopped the blow out of the higher order function signature, but it starts to highlight a problem of passing results between the composed functions.  Well not so much in passing results, but in which parts of logic to execute with which thread.
+
+  To get the result from functionA as an argument to functionB, we have two approaches:
+
+   *  As functionA completes, the system returns the result to the higher order function's thread that then passes it onto functionB
+  
+   *  As functionA completes, it carries onto execute functionB
+
+  The difference is very subtle, however significant for thread context switching overheads.
+
+  Note: in my naive understanding of functional programming, I believe the first approach can be considered turning each function into an Actor, while the second approach is a Continuation (continuation passing style).
+
+  Anyway, before misunderstanding too much of the functional programming literature, the problem with the first approach is excessive thread context switching.  If the higher order function is a different executor to it's composed functions, it creates two thread context switches for every composed function.  The execution would be:
+
+   [[1]] Higher order function executes
+
+   [[1]] Invokes composed function on another thread
+
+   [[1]] Result returned to higher order function that thread context switches back to itself
+
+   [[1]] Invokes next composed function on another thread (possibly the same thread required for step 2)
+
+  The thread context switch that happens in step 3 is not really required.   Furthermore, the cost of switching the thread would be more than the few operations to pass the result of first function to the second function.
+
+  Note: I refer to thread context switching overheads assuming threads need to be scheduled in to handle each part.  However, even if threads were running continuously on separate cores, there is overheads in having to get the messages between the threads.
+
+  There is also a second problem of exceptions.  Yes, I understand exceptions are not very functional, however I'll come to this later in regards to composition.
+
+  So if we take approach 2 of continuation, then the execution would be as follows:
+
+   [[1]] Higher order function executes
+
+   [[1]] Invokes composed function on another thread (passing in the next composed function)
+
+   [[1]] On result, the composed function continues with the next composed function
+
+  We have eliminated the extra context switch in the first approach by letting the composed functions continue on with each other.
+
+  So I'm guessing this is not overly special.   We've just reinventing Continuation Passing Style with the ability to execute the continuation with the implicit thread or delegating to a different thread.  In doing so, we try to use the implicit thread as much as possible to reduce context switching.  However when functions have different execution characteristics (such as blocking I/O, expensive CPU computations) we swap threads to enable appropriate execution of the functions to keep the overall application performant.  Note that the continuation also works nicely as the callback for asynchronous I/O.
+
+  Also, as another way of thinking about the threading is to consider the threads running on separate cores.  The first approach is very much synchronous communication.  Composed function is invoked and the higher order function effectively waits until the result is available.  Continuations, on the other hand, are more akin to asynchronous communication.  Higher order function triggers the composed function and then is free to continue other functions.  The composed function will continue itself with the next composed function.
+
+  But continuations do not come easily.
+
+  Continuation passing has implications for the function signature, as we must pass the next continuation into all functions.  This now has our functions looking like this:
+
+%{snippet|id=continuation|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Now might I dare say there is more than one outcome to a function - well to me anyway.  Yes, we could return a data type that has a successful result or an error.  I, personally, like to handle those outcomes separately.  Yes, we can create case statements to achieve this based on type, but for each new error type I'm adding new case statement handling.  This, to me, reminds me of reflection problems of having to interrogate for each error type.
+
+  Rather than combining the result and error into the one next continuation, we can provide a continuation for each.   Note, my understanding is that this is not too different to try/catch blocks (except that we can now execute the catch block with the implicit thread or different thread).  In other words, we provide multiple continuations:
+
+%{snippet|id=errorContinuations|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  But why stop there. We can also have different paths through the function for say if statements. If condition is true follow the first continuation, else follow the second continuation.
+
+%{snippet|id=multipleContinuations|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  This is starting to blow out the function signature again, especially when composing into higher order functions that have to handle many exceptions.   This is also the reason I tend to find many frameworks are moving away from checked exceptions.   However, with first class procedures, we very much like checked exceptions (though this is probably not as you typically know them).  But we'll come to this soon.
+
+  So to avoid the signature blow out, let's do what we did with the choice of executor and wrap the continuation decision into a function. For now, let's assume we can have some key to aid the function to determine the appropriate continuation. This function would look as follows:
+
+%{snippet|id=continuationLocator|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  This then turns all our functions into the following:
+
+%{snippet|id=continuationFunction|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  So now we have this very flexible execution model than minimises the thread context switching.
+
+  However, how do we implement the executorLocator and continuationLocator functions?
+
+  Well the naming of the functions is deliberate, as they follow the ServiceLocator pattern.   Given a key provide back the dependency.   However, in this case, it is not an object but rather an executor for thread choice and continuation for invoking the next function.
+
+  Yay, we can now go create key/value configuration for every function in the system.  Well, maybe not.
+
+  This granularity of configuration ends up being a nightmare.  I can certainly say my first versions of implementing first class procedures showed this very much to be the case.
+
+  Plus given we have an assumed key to identify the continuation, how do we know we have every continuation configured for a complete system?  In other words, how can we make this compile safe?
+
+  To solve this problem, I do what we typically always do in software, add more indirection.
+
+  Huh, more dynamic indirection to create a type safe compiled solution?  Well, yes.
+
+  To explain how indirection has helped, let's start with the Continuation Injection.
+
+  Firstly, we are going to give the function state (or possibly better described as meta-data).  Arguably this is potentially turning the function into an object, but I'm going to avoid trying to relate things to the literature right now and focus on how the first class procedure has evolved.
+
+  So we now have a wrapping the object:
+
+%{snippet|id=functionWithContinuation|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  So we've associated the continuations to the function, but this really is only a dynamic map based on key.  Therefore, to be compile safe, we need to make key mean something the compiler/framework can understand and check.
+
+  Well to do this, let's go back to the exploded function signature:
+
+%{snippet|id=explodedFunction|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Given, parameters are always ordered, we can use the index of the continuation as the key.  This has the ManagedFunction look as follows:
+
+%{snippet|id=runContinuation|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Now, I mentioned first class procedures actually like using checked exceptions.  The reason is that the checked exception is stated on the signature.  This would look like:
+
+%{snippet|id=throwsError|file=./src/site/functions/Function.java|ignoreDownloadError=false}
+
+  Checked exceptions are not ordered, but their types are unique.   We can, therefore, use the checked exception's type as the key.  This now turns the ManagedFunction into the following:
+
+%{snippet|id=catchException|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Now, to make compile/framework safe, we provide a function that produces the required list of keys for the logic function:
+
+%{snippet|id=extractContinuations|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  The compiler/framework will then confirm that configuration mappings are provided for each key.   This allows validating that all continuations are configured for the function to operate.  Furthermore, doing this across all ManagedFunction instances within the application, we can confirm a complete configured application.  We now have compile/framework startup safe validation that all continuations are configured.
+
+  However, now we are having problems of passing state between the functions contained within the ManagedFunction.  As only one argument can be passed with the continuation, how can a function have more than one parameter?
+
+  Ideally, we want to have each ManagedFunction have the following run method:
+
+%{snippet|id=singleParameter|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  So, how can we provide the additional parameters for the function?
+
+  Well, before answering this, we need to consider how the first continuation is triggered to start the chain of ManagedFunction executions.  As the application is now being realised as a mapping of continuation to ManagedFunctions, we need means to trigger a continuation from outside a ManagedFunction.
+
+  Well, why can't we give objects continuations?
+
+  We can create a ManagedObject that contains continuations:
+
+%{snippet|id=managedObject|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  This now allows objects to trigger logic.  Why is this useful?   Well, for example, we can have a HTTP socket listener object that receives requests and services the request by invoking the continuation with the request.   Further ManagedFunction instances will then use details of the request, to route it via continuations to appropriate handling ManagedFunction instances to then service the request.
+
+  The HTTP example actually points us to a design pattern already solving the issue of multiple parameters for a function.  A typical thread-per-request web server has a request, session and application context.   Now let's ignore session and application contexts as they are not concurrency safe.  It is the request context pattern that helps us.
+
+  A request context allows passing objects between controllers and view rendering components.   What are the controllers and view renders?   They are snippets of logic that take in a request scope to access/mutate the request scope to capture enough state to provide a response (with possible side effects of saving state in databases, logging details, etc).
+
+  These snippets of logic fit well into the ManagedFunction, with request scopes created for each continuation tree invoked from a ManagedObject.  ManagedObjects are created in the application that are hooked into the network of continuations to ManagedFunctions.  When the ManagedObject receives an event (HTTP request, queue message, etc), it does two things:
+
+    [[1]] Starts a new request scope
+
+    [[1]] Triggers the first continuation with the scope that carries through for all further continuations triggered
+
+    [[1]] ManagedFunctions can now grab their required parameters from the scope
+
+  This can be taken further to include dependency injection.  Rather than the ManagedFunction being responsible for managing the request scope, the request scope objects are provided through dependency injection.  This is the following dependency context for the ManagedFunction:
+
+%{snippet|id=dependencyContext|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Side benefit of providing Dependency Context is that we can re-use existing Dependency Injection frameworks for managing objects.  For example, the ServiceLocator can be a Spring BeanFactory.  Furthermore, we can also dependency inject ManagedObject implementations to allow objects to maintain state, but also trigger continuations in the background (e.g. background polling for JWT key changes in providing JWT authentication state).
+
+  The ManagedFunction now becomes:
+
+%{snippet|id=continuationFactory|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+%{snippet|id=functionDependencyContext|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  To populate the scope names, we can again use reflection on the logic signature.  However, rather than having to provide explicit configuration, we can use auto-wire configuration based on parameter type and possible qualifier.  This then becomes normal dependency injection for constructors, except that we are injecting into the logic function.
+
+  We can now have database connections, HTTP clients, etc provided to the logic, however it does not answer the problem of passing state across the continuation boundaries.
+
+  To solve passing state, we just create a state object.   This object acts much like a variable.  It's value can be set and retrieved.  However, this introduces mutability and timing concerns regarding the flow of continuations.   It is unclear on whether a ManagedFunction is only safely accessing the variable's value, or is unsafely mutating the variable.  Therefore, for variables we provide additional support within the ManagedFunction to identify the use of the variable.
+
+  For variable state objects, we allow the ManagedFunction to use various interfaces to identify the nature of using the variable.  This allows the following interfaces for a variable state:
+
+%{snippet|id=variables|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  ManagedFunctions can then use the appropriate interface to identify their intention on the state of the variable.
+
+  Note that it is now possible to traverse the graph from ManagedObject continuations to confirm variable state outputs of ManagedFunctions are always upstream of respective inputs.   This creates an ability for compile safe state generation.  Furthermore, if all objects loaded to scope variables are immutable it allows reasoning for identifying the ManagedFunction producing incorrect state (just look for the ManagedFunctions requiring the Out of the variable).
+
+  What this now also provides is multiple inputs and multiple outputs.  Composition is no longer derived by output of one function being passed as input to the next function.  State is maintained in scope with ManagedFunctions pulling/pushing state as appropriate to the scope.  Continuations are now separated from having to be concerned with all the state needed to invoke a ManagedFunction.
+
+  Now, the above implementation assumes some order of parameters followed by continuations in invoking the logic.  As this information is reflectively retrieved from the logic function, the order is not necessary.  We can then have a ManagedFunction look as follows:
+
+%{snippet|id=parameters|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+%{snippet|id=unorderedParameters|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  Notice that the return value from the function (logic) is no longer necessary.  Hence, why we're considering this "first class procedures".
+
+  So we've provided composition of logic with state management, but we've not solved the original implicit thread problem that sparked this.
+  
+  To solve specifying explicit threads, we need to implement the ExecutorLocator.  This is achieved by looking at the parameter types of the function.  As all state (objects) are now injected into the function from the DependencyContext, we can determine the execution characteristics of the function from it's parameters.  In other words, if the function depends on a Database connection, it is likely to be making blocking calls.  Therefore, we can use the parameter types of the function to implement the ExecutorLocator:
+
+%{snippet|id=executor|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+  
+  Now, as the Executor can be determined at start up time, the ManagedFunction is now:
+  
+%{snippet|id=managedFunction|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
+
+  This enables choice of Executor for any function to managed within configuration.   This separates it from concerns of composition and state management.
+  
+  And now you are up to speed with the general concepts behind the first class procedure.
+  
+  There are other concepts built on first class procedures, such as:
+  
+   * process, thread, function scoped dependency contexts for concurrency/parallel processing
+
+   * higher order compositions (Sections)
+   
+   * thread affinity and other thread management (via Executive)
+   
+   * providing context for state, such as transactions (Governance)
+   
+   * ManagedFunctions configured into flows similar to aspects (Administration)
+
+  However, this article is focused on the first class procedure and is already long enough.
+     
+  So, in conclusion, the first class procedure is applying inversion of control to the function to inject in state, continuations and thread (via Executor).  This means the first class procedure no longer requires composition via return values of the function.  This makes it significantly easier to weave impure/pure functionality together.  Furthermore, it allows execution strategies for the application to be configured in at deployment time.
