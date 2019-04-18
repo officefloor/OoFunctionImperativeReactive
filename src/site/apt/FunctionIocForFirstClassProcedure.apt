@@ -4,7 +4,7 @@
 				      Daniel Sagenschneider
 				       ------------------
 
-  This is the second article of two to introduce the term I'm suggesting of "first class procedure".  The first article (here), provided a working example of the first class procedure to see them in action.  This article delves into the detail and some theory on how the first class procedure has evolved.
+  This is the second article of two to introduce the term I'm suggesting of "first class procedure".  The {{{./OoFunctionImperativeReactiveWeavedTogether.html}first article}}, provided a working example of the first class procedure to see them in action.  This article delves into the detail and some theory on how the first class procedure has evolved.
 
   The inspiration and origins of the first class procedure started from watching how businesses are organised.   If you consider an application as a decision making system on information, you can consider an Office an application.  An Office takes in customer requests, processes information and then relays information to customers, factories, distribution chains, other Offices, etc.  It is a lot like a function of having informational inputs and producing informational outputs.  Furthermore, following the analogy you can consider people working within an Office, similar to threads of an application.  This analogy has lead to the first class procedure and is based on how businesses handle problems of scale, functional break down, information organisation, etc.
 
@@ -255,3 +255,5 @@
   However, this article is focused on the first class procedure and is already long enough.
      
   So, in conclusion, the first class procedure is applying inversion of control to the function to inject in state, continuations and thread (via Executor).  This means the first class procedure no longer requires composition via return values of the function.  This makes it significantly easier to weave impure/pure functionality together.  Furthermore, it allows execution strategies for the application to be configured in at deployment time.
+
+  And to see all this in action, please see the {{{./OoFunctionImperativeReactiveWeavedTogether.html}first article}}.
