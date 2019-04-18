@@ -72,7 +72,7 @@
   <securities>
   </securities>
   <governances>
-    <governance name="Transaction" source="net.officefloor.spring.data.SpringDataTransactionGovernanceSource" x="486" y="130">
+    <governance name="Transaction" source="net.officefloor.spring.data.SpringDataTransactionGovernanceSource" x="484" y="189">
       <governance-area x="509" y="239" width="1301" height="171"/>
     </governance>
   </governances>

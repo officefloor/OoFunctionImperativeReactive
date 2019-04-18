@@ -7,6 +7,7 @@ import net.officefloor.web.ObjectResponse;
 
 public class Send {
 
+	// START SNIPPET: tutorial
 	public void send(@Val WeavedRequest request, @Val RequestStandardDeviation standardDeviation,
 			@EventLoopResponse @Val ServicedThreadResponse[] eventLoopResponse,
 			@ThreadPerRequestResponse @Val ServicedThreadResponse[] threadPerRequestResponse,
@@ -14,4 +15,5 @@ public class Send {
 		response.send(new WeavedResponse(request.getRequestIdentifier(), request.getId(), eventLoopResponse,
 				threadPerRequestResponse, standardDeviation.getStandardDeviation()));
 	}
+	// END SNIPPET: tutorial
 }
