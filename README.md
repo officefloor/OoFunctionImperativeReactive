@@ -2,6 +2,8 @@
 
 First class procedure weaving together OO, Functional, Imperative, Reactive
 
+[![Build Status](https://travis-ci.com/sagenschneider/OoFunctionImperativeReactive.svg?branch=master)](https://travis-ci.com/sagenschneider/OoFunctionImperativeReactive)
+
 ## Try out the example code
 
  1. Clone this repository
