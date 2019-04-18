@@ -1,0 +1,11 @@
+dist: xenial
+language: java
+sudo: required
+cache:
+  directories: $HOME/.m2
+jobs:
+  include:
+    - name: Java 8
+      jdk: openjdk8
+    - name: Java 11
+      jdk: openjdk11
