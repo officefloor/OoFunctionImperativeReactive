@@ -195,6 +195,11 @@
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.7.1</version>
 			</plugin>
+			<plugin>
+				<groupId>net.officefloor.maven</groupId>
+				<artifactId>officefloor-maven-plugin</artifactId>
+				<version>${officefloor.version}</version>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>

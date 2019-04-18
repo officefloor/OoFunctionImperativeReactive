@@ -1,0 +1,95 @@
+<html>
+<head>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+	integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+	crossorigin="anonymous"></script>
+
+</head>
+<body>
+	<h1>Requests</h1>
+
+	<p>
+		<a href="#" onclick="sendEventLoopRequest()">Send event loop
+			request</a>
+	</p>
+	<pre>
+		<code id="eventLoopResponse"></code>
+	</pre>
+
+	<p>
+		<a href="#" onclick="sendThreadPerRequest()">Send
+			thread-per-request request</a> <input id="threadPerRequestIdentifier"
+			type="text" value="1"></input>
+	</p>
+	<pre>
+		<code id="threadPerRequestResponse"></code>
+	</pre>
+
+	<p>
+		<a href="#" onclick="sendWeaveRequest()">Send weave request</a> <input
+			id="weaveIdentifier" type="text" value="2"></input>
+	</p>
+	<pre>
+		<code id="weaveResponse"></code>
+	</pre>
+
+
+	<script type="text/javascript">
+		function sendEventLoopRequest() {
+			$.ajax({
+				type : "GET",
+				url : '/event-loop',
+				headers : {
+					Accept : 'application/json'
+				},
+				success : function(result) {
+					$('#eventLoopResponse').text(
+							JSON.stringify(result, null, 4))
+				},
+				error : function(request, status, error) {
+					$('#eventLoopResponse').text('Error: ' + error)
+				}
+			})
+		}
+
+		function sendThreadPerRequest() {
+			var identifier = $('#threadPerRequestIdentifier').val()
+			console.log('Thread-per-request identifier ' + identifier)
+			$.ajax({
+				type : "POST",
+				url : '/thread-per-request',
+				dataType : 'json',
+				contentType : 'application/json',
+				data : JSON.stringify({
+					identifier : identifier
+				}),
+				success : function(result) {
+					$('#threadPerRequestResponse').text(
+							JSON.stringify(result, null, 4))
+				},
+				error : function(request, status, error) {
+					$('#threadPerRequestResponse').text('Error: ' + error)
+				}
+			})
+		}
+
+		function sendWeaveRequest() {
+			var identifier = $('#weaveIdentifier').val()
+			console.log('Weave identifier ' + identifier)
+			$.ajax({
+				type : "POST",
+				url : '/weave/' + identifier,
+				headers : {
+					Accept : 'application/json'
+				},
+				success : function(result) {
+					$('#weaveResponse').text(JSON.stringify(result, null, 4))
+				},
+				error : function(request, status, error) {
+					$('#weaveResponse').text('Error: ' + error)
+				}
+			})
+		}
+	</script>
+</body>
+</html>
