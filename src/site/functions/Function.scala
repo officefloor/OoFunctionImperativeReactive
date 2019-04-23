@@ -1,4 +1,8 @@
-class Function {
+import java.lang.Class
+import net.officefloor.plugin.section.clazz.Parameter
+import java.lang.Throwable
+
+abstract class Function {
 
   // START SNIPPET: function
   type Function = Array[Any] => Any
@@ -66,7 +70,8 @@ class Function {
     class ManagedFunction(
       val logic: Function,
       val continuations: Map[Any, Continuation]) {
-      def cont(key: Any) = continuations.get(key) match { case Some(cont) => cont }
+
+      def cont(key: Any): Continuation = continuations.get(key) match { case Some(cont) => cont }
 
       def run(parameters: Array[Any]) = logic(parameters ++ Array(cont(1), cont(2)))
     }
@@ -78,7 +83,8 @@ class Function {
     class ManagedFunction(
       val logic: Function,
       val continuations: Map[Any, Continuation]) {
-      def cont(key: Any) = continuations.get(key) match { case Some(cont) => cont }
+
+      def cont(key: Any): Continuation = continuations.get(key) match { case Some(cont) => cont }
 
       def run(parameters: Array[Any]) = {
         try {
@@ -91,18 +97,20 @@ class Function {
     // END SNIPPET: catchException
   }
 
+  def extractParameterTypes(function: Function): Array[Class[_]]
+  def extractExceptionTypes(function: Function): Array[Class[_ <: Throwable]]
   // START SNIPPET: extractContinuations
-  def extractContinuations(function: Function) = {
-    val keys: List[Any] = List()
-    // reflectively check parameters for Continuations adding their index as key
-    // reflectively check exceptions and add exception type as key
-    keys
+  def extractContinuations(function: Function): Array[Any] = {
+    var parameterIndex = 0
+    extractParameterTypes(function)
+      .filter((parameterType) => classOf[Continuation].isAssignableFrom(parameterType)).map((paramContinuation) => { parameterIndex += 1; parameterIndex }) ++
+      extractExceptionTypes(function)
   }
   // END SNIPPET: extractContinuations
 
   object Four {
     // START SNIPPET: singleParameter
-    class ManagedFunction {
+    abstract class ManagedFunction {
       def run(parameter: Any) // not, parameters: Array[Any]
     }
     // END SNIPPET: singleParameter
@@ -145,8 +153,9 @@ class Function {
       val logic: Function,
       val parameterScopeNames: List[String],
       val continuations: Map[Any, ContinuationFactory]) {
-      def obj(index: Int, context: DependencyContext) = context.getObject(parameterScopeNames(index))
-      def cont(key: Any, context: DependencyContext) = continuations.get(key) match { case Some(factory) => factory(context) }
+
+      def obj(index: Int, context: DependencyContext): Any = context.getObject(parameterScopeNames(index))
+      def cont(key: Any, context: DependencyContext): Continuation = continuations.get(key) match { case Some(factory) => factory(context) }
 
       def run(parameterFromContinuation: Any, context: DependencyContext) = {
         try {
@@ -165,27 +174,26 @@ class Function {
   trait Var[T] extends Out[T] with In[T]
   // END SNIPPET: variables
 
-  // START SNIPPET: parameters
-  def logicArguments(logic: Function, parameterFromContinuation: Any, obj: (Int, DependencyContext) => Any, cont: (Any, DependencyContext) => Continuation): Array[Any] = {
-    var arguments = Array[Any]()
-    // reflectively interrogate logic function to create argument for each parameter
-    arguments
-  }
-  // Note: as the logic function signature is static, this function can be generated compile time avoiding reflection for performance
-  // END SNIPPET: parameters
-
   object Six {
     // START SNIPPET: unorderedParameters
     class ManagedFunction(
       val logic: Function,
       val parameterScopeNames: List[String],
       val continuations: Map[Any, ContinuationFactory]) {
-      def obj(index: Int, context: DependencyContext) = context.getObject(parameterScopeNames(index))
-      def cont(key: Any, context: DependencyContext) = continuations.get(key) match { case Some(factory) => factory(context) }
+
+      def obj(index: Int, context: DependencyContext): Any = context.getObject(parameterScopeNames(index))
+      def cont(key: Any, context: DependencyContext): Continuation = continuations.get(key) match { case Some(factory) => factory(context) }
 
       def run(parameterFromContinuation: Any, context: DependencyContext) = {
+        var continuationIndex = 0
+        var objectIndex = 0
+        val arguments = extractParameterTypes(logic).map(_ match {
+          case p if p.isAnnotationPresent(classOf[Parameter]) => parameterFromContinuation
+          case c if classOf[Continuation].isAssignableFrom(c) => cont({ continuationIndex += 1; continuationIndex }, context)
+          case _ => obj({ objectIndex += 1; objectIndex }, context)
+        })
         try {
-          logic(logicArguments(logic, parameterFromContinuation, obj, cont))
+          logic(arguments)
         } catch {
           case ex: Throwable => cont(ex.getClass(), context)(ex)
         }
@@ -194,38 +202,68 @@ class Function {
     // END SNIPPET: unorderedParameters
   }
 
-  class ParameterType
-  // START SNIPPET: executor
-  def executorLocator(logic: Function, configuration: Map[ParameterType, Executor]): Executor = {
-    // Default executor is synchronous (implicit thread)
-    var executor: Executor = (logic, arguments) => logic(arguments)
-    // reflectively interrogate logic function to look up Executor by the parameter types within the configuration
-    // (if no match then does not override executor and uses implicit thread)
-    executor
-  }
-  // Note: as the logic function signature is static, memoization (caching Executor for ManagedFunction) can improve performance
-  // END SNIPPET: executor
-
   object Seven {
-    def createManagedFunction(): ManagedFunction = null
-    // START SNIPPET: managedFunction
+    // START SNIPPET: procedure
     class ManagedFunction(
-      val logic: Function,
-      val executor: Executor,
+      val procedure: Array[Any] => Unit,
       val parameterScopeNames: List[String],
       val continuations: Map[Any, ContinuationFactory]) {
-      
-      def obj(index: Int, context: DependencyContext) = context.getObject(parameterScopeNames(index))
-      def cont(key: Any, context: DependencyContext) = continuations.get(key) match { case Some(factory) => factory(context) }
 
-      def run(parameterFromContinuation: Any, context: DependencyContext) = {
-        executor((arguments) => {
+      def obj(index: Int, context: DependencyContext): Any = context.getObject(parameterScopeNames(index))
+      def cont(key: Any, context: DependencyContext): Continuation = continuations.get(key) match { case Some(factory) => factory(context) }
+
+      def run(parameterFromContinuation: Any, context: DependencyContext): Unit = {
+        var continuationIndex = 0
+        var objectIndex = 0
+        val arguments = extractParameterTypes(procedure).map(_ match {
+          case p if p.isAnnotationPresent(classOf[Parameter]) => parameterFromContinuation
+          case c if classOf[Continuation].isAssignableFrom(c) => cont({ continuationIndex += 1; continuationIndex }, context)
+          case _ => obj({ objectIndex += 1; objectIndex }, context)
+        })
+        try {
+          procedure(arguments)
+        } catch {
+          case ex: Throwable => cont(ex.getClass(), context)(ex)
+        }
+      }
+    }
+    // END SNIPPET: procedure
+  }
+
+  object Eight {
+    // START SNIPPET: managedFunction
+    class ManagedFunction(
+      val procedure: Array[Any] => Unit,
+      val parameterScopeNames: List[String],
+      val continuations: Map[Any, ContinuationFactory],
+      val executorConfiguration: Map[Class[_], Executor]) {
+
+      def obj(index: Int, context: DependencyContext): Any = context.getObject(parameterScopeNames(index))
+      def cont(key: Any, context: DependencyContext): Continuation = continuations.get(key) match { case Some(factory) => factory(context) }
+      def executorLocator(): Executor = {
+        var executor: Executor = (logic, arguments) => logic(arguments) // default executor is synchronous (implicit thread)
+        extractParameterTypes(procedure).map((parameterType) => executorConfiguration.get(parameterType) match {
+          case Some(e) => { executor = e; e } // matched so override
+          case None => executor
+        })
+        executor
+      }
+
+      def run(parameterFromContinuation: Any, context: DependencyContext): Unit = {
+        var continuationIndex = 0
+        var objectIndex = 0
+        val arguments = extractParameterTypes(procedure).map(_ match {
+          case p if p.isAnnotationPresent(classOf[Parameter]) => parameterFromContinuation
+          case c if classOf[Continuation].isAssignableFrom(c) => cont({ continuationIndex += 1; continuationIndex }, context)
+          case _ => obj({ objectIndex += 1; objectIndex }, context)
+        })
+        executorLocator()((arguments) => {
           try {
-            logic(arguments)
+            procedure(arguments)
           } catch {
             case ex: Throwable => cont(ex.getClass(), context)(ex)
           }
-        }, logicArguments(logic, parameterFromContinuation, obj, cont))
+        }, arguments)
       }
     }
     // END SNIPPET: managedFunction

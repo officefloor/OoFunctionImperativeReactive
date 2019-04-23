@@ -221,26 +221,27 @@
 
   Now, the above implementation assumes some order of parameters followed by continuations in invoking the logic.  As this information is reflectively retrieved from the logic function, the order is not necessary.  We can then have a ManagedFunction look as follows:
 
-%{snippet|id=parameters|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 %{snippet|id=unorderedParameters|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
   Notice that the return value from the function (logic) is no longer necessary.  Hence, why we're considering this "first class procedures".
+  
+  This can then be represented as follows:
+
+%{snippet|id=procedure|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
   So we've provided composition of logic with state management, but we've not solved the original implicit thread problem that sparked this.
   
-  To solve specifying explicit threads, we need to implement the ExecutorLocator.  This is achieved by looking at the parameter types of the function.  As all state (objects) are now injected into the function from the DependencyContext, we can determine the execution characteristics of the function from it's parameters.  In other words, if the function depends on a Database connection, it is likely to be making blocking calls.  Therefore, we can use the parameter types of the function to implement the ExecutorLocator:
-
-%{snippet|id=executor|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
-  
-  Now, as the Executor can be determined at start up time, the ManagedFunction is now:
+  To solve specifying explicit threads, we need to implement the ExecutorLocator.  This is achieved by looking at the parameter types of the function.  As all state (objects) are now injected from the DependencyContext, we can determine the execution characteristics from the parameters.  In other words, if the logic depends on a Database connection, it is likely to be making blocking calls.  Therefore, we can use the parameter types to implement the ExecutorLocator:
   
 %{snippet|id=managedFunction|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  This enables choice of Executor for any function to managed within configuration.   This separates it from concerns of composition and state management.
+  This enables choice of Executor to be managed within configuration.   This separates it from concerns of composition and state management.
   
   And now you are up to speed with the general concepts behind the first class procedure.
   
-  There are other concepts built on first class procedures, such as:
+  Though, do note that the actual implementation uses a lot more memoization, as function signatures are static allowing the reflection to be done at compile/startup time.
+  
+  There are also other concepts built on first class procedures, such as:
   
    * process, thread, function scoped dependency contexts for concurrency/parallel processing
 
@@ -250,7 +251,7 @@
    
    * providing context for state, such as transactions (Governance)
    
-   * ManagedFunctions configured into flows similar to aspects (Administration)
+   * additional ManagedFunctions inserted into flows similar to aspects (Administration)
 
   However, this article is focused on the first class procedure and is already long enough.
      
