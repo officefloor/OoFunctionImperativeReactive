@@ -52,8 +52,8 @@ public class ReactiveService {
 				.map((index) -> client.post().uri(URL, "thread-per-request").contentType(MediaType.APPLICATION_JSON)
 						.syncBody(new ServicedThreadRequest(request.getId())).retrieve()
 						.bodyToMono(ServicedThreadResponse.class))
-				.flatMap((response) -> response).collectList().subscribe((response) -> threadPerRequestFlow.complete(
-						() -> threadPerRequestResponse.set(response.stream().toArray(ServicedThreadResponse[]::new))));
+				.flatMap((response) -> response).collectList().subscribe((responses) -> threadPerRequestFlow.complete(
+						() -> threadPerRequestResponse.set(responses.stream().toArray(ServicedThreadResponse[]::new))));
 	}
 	// END SNIPPET: tutorial
 

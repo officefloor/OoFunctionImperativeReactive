@@ -6,6 +6,10 @@ abstract class Function {
 
   // START SNIPPET: function
   type Function = Array[Any] => Any
+
+  // Example of first class function
+  def exampleFunction(paramOne: Int, paramTwo: Double): String
+  val firstClassFunction: Function = (parameters) => exampleFunction(parameters(0).asInstanceOf[Int], parameters(1).asInstanceOf[Double])
   // END SNIPPET: function
 
   // START SNIPPET: invoke
@@ -100,11 +104,11 @@ abstract class Function {
   def extractParameterTypes(function: Function): Array[Class[_]]
   def extractExceptionTypes(function: Function): Array[Class[_ <: Throwable]]
   // START SNIPPET: extractContinuations
-  def extractContinuations(function: Function): Array[Any] = {
+  def extractContinuations(logic: Function): Array[Any] = {
     var parameterIndex = 0
-    extractParameterTypes(function)
+    extractParameterTypes(logic)
       .filter((parameterType) => classOf[Continuation].isAssignableFrom(parameterType)).map((paramContinuation) => { parameterIndex += 1; parameterIndex }) ++
-      extractExceptionTypes(function)
+      extractExceptionTypes(logic)
   }
   // END SNIPPET: extractContinuations
 
