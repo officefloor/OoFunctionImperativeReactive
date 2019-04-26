@@ -4,9 +4,11 @@
 				      Daniel Sagenschneider
 				       ------------------
 
+OO Functional Imperative Reactive weaved together with First Class Procedures
+
   This is first of a two part article to discuss the "First Class Procedure", a term I'm using to best describe the concept.
 
-  While Functional Programming provides composition through first class functions and Object Orientation provides composition through objects, first class procedures are to me a fusion of the two concepts.  For me, first class procedures make composition concerns a lot more explicit, while also separating concerns of state, composition and execution.  I find Object Orientation suffers issues of implicit object references (e.g. wanting a banana and getting the gorilla with the jungle), while functional programming suffers issues of implicit threads.  The first class procedures tackles these issues, so that composition is a separate concern to managing state, along with also separating out execution strategies.
+  While Functional Programming provides composition through first class functions and Object Orientation provides composition through objects, first class procedures are to me a fusion of the two concepts.  For me, first class procedures make composition concerns a lot more explicit, while also separating concerns of state, composition and execution.  I find Object Orientation suffers issues of implicit object references (e.g. wanting a banana and getting the gorilla with the jungle), while functional programming (and OO) suffers issues of implicit threads.  The first class procedures tackles these issues, so that execution strategies, composition and state are all separate concerns.
 
   Now to write a complete description of the first class procedure is beyond a single article.  There are many patterns used together to enable the composition through first class procedures.  Therefore, I'm going to provide an introduction to first class procedures in two parts:
 
@@ -29,7 +31,7 @@ First class procedure
 
 *Simple thread-per-request
 
-  The following first class procedure services a REST request by pulling a value from the database and sending in the response.  This will be run by a separate thread pool.
+  The following first class procedure services a REST request by pulling a value from the database and sending it in the response.  This will be run by a separate thread pool.
 
 %{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/ThreadPerRequestService.java|ignoreDownloadError=false}
   
@@ -45,13 +47,13 @@ First Class Procedures weaved together
   
    [[1]] Validate a request (on socket event loop thread).
    
-   [[1]] Start a transaction and register the request in the database.  This will be on another thread to avoid halting the socket event loop.
+   [[1]] Start a transaction and register the request in the database.  This will be on another thread to avoid halting the socket event loop thread.
    
    [[1]] Make reactive calls to pull in data from other services.
    
    [[1]] Run some functional code to work out the standard deviation on service times.
 
-   [[1]] Undertake alternate flows to handle special cases (including handling exceptions).  Then if no exceptions causing rollback, store results in the database.  This again is on a different thread to not tie up the reactive event loop.
+   [[1]] Undertake alternate flows to handle special cases (including handling exceptions).  Then if no exceptions causing rollback, store results in the database.  This again is on a different thread to not tie up the reactive event loop thread.
 
    [[1]] Send the response after committing the transaction
 
@@ -80,7 +82,7 @@ First Class Procedures weaved together
 
   The next is some Reactive code to concurrently call the two REST end points detailed at the start of this article (simple event loop and simple thread-per-request).   Because we are using Reactive we can call them concurrently to improve performance.
 
-  Note that while waiting on the responses, the flow is effectively idle with threads servicing other functionality.  This is asynchronous handling so that threads are not tied up waiting.   Once both sets of results come back, they notify the asynchronous flow to continue processing.
+  Note that while waiting on the responses, the flow is effectively idle with threads servicing other functionality.  This is asynchronous handling so that threads are not tied up waiting.   Once both sets of results come back, they notify the respective asynchronous flow to continue processing.
 
 %{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/ReactiveService.java|ignoreDownloadError=false}
 
@@ -163,8 +165,6 @@ Thread Injection
 
   Here we flag all procedures requiring a Spring Repository to be executed by a thread pool.  Remember I said keep note of use of Spring Repository.  Well the above configuration has any first class procedure requiring a Spring Repository executed by the configured thread pool.
   
-  Now, we can happily add further thread pools for other procedures by adding the particular input dependency to the configuration.  In other words, write the procedures with unit testing not worrying about threading issues.  Weave them together and then configure the appropriate threading.  See this article for more details.
-
   Therefore, looking at the flow again, the thread execution is as follows:
 
    [[1]] Validate uses the thread of the socket listener event loop
@@ -175,7 +175,7 @@ Thread Injection
 
    [[1]] The reactive event loop thread then invokes the callbacks.  As the Scala code is quick to execute, the reactive event loop thread carries on to execute the Scala pure function.  Here it is deemed that a thread context switch is too much overhead, and it is more efficient to just invoke the highly optimised Scala pure function.  However, if we want to separate the Scala function to different thread pool, we can configure in a different thread pool (typically via marker dependency on the first class procedure).
 
-   [[1]] The remaining imperative code has a switch back to a thread from the configured thread pool, as depends on Spring repository.  Furthermore, the thread locals between the threads are propagated to each used thread, so the Spring Repository thread local transaction context is not lost (i.e. transaction is active for all first class procedures within the transaction bounds).
+   [[1]] The remaining imperative code has a switch back to a thread from the configured thread pool, as depends on Spring repository.  Furthermore, the thread locals between the threads are propagated to each used thread, so the Spring Repository transaction is not lost (i.e. transaction is active for all first class procedures within the transaction bounds).
 
    [[1]] Response is then sent.
 
@@ -191,11 +191,13 @@ Disclaimer
 
   Also, as you can see we've had to cover a lot of breadth in each programming paradigm.  If the code is not a good representation of the paradigm, we're very happy to take feedback on improvements from those more acquainted with a particular paradigm.
 
-  And if we've missed an important paradigm, please let me know so I can consider including it.  When it comes to coding I appreciate diversity to give developers choice.  We're trying to tear down fences between the paradigms to have one big happy coding family.
+  And if we've missed an important paradigm, please let me know so we can consider including it.  When it comes to coding we appreciate diversity to give developers choice.  We're trying to tear down fences between the paradigms to have one big happy coding family.
 
 
 Summary
 
   We've demonstrated how the first class procedure can weave together polyglot code written in different paradigms to service a request.  The code outlined above in the article is all the code required for the application.  There is no further weaving code required.
 
-  Furthermore, to avoid the problems of it works only on my machine (in my article), the code for the above is available {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}here}}.  See the {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}readme}} on how to run it.  For more understanding of what's going on, see the {{{http://officefloor.net/tutorials/}tutorials}}, my {{{https://sagenschneider.blogspot.com/}other articles}} and in particular my {{{./FunctionIocForFirstClassProcedure.html}next article}}.
+  Furthermore, to avoid the problems of it only works on my machine (in this article), the code for the above is available {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}here}}.  See the {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}readme}} on how to run it.
+  
+  For more understanding of what's going on, see the {{{http://officefloor.net/tutorials/}tutorials}}, my {{{https://sagenschneider.blogspot.com/}other articles}} and in particular my {{{./FunctionIocForFirstClassProcedure.html}next article}}.
