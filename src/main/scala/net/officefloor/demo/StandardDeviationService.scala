@@ -1,7 +1,7 @@
 package net.officefloor.demo
 
 import Numeric.Implicits._
-import net.officefloor.plugin.section.clazz.NextFunction
+import net.officefloor.plugin.section.clazz.Next
 import net.officefloor.plugin.variable.Val
 
 object StandardDeviationService {
@@ -16,7 +16,7 @@ object StandardDeviationService {
 
   def stdDev(timestamps: Iterable[Long]): Double = math.sqrt(variance(timestamps))
 
-  @NextFunction("use")
+  @Next("use")
   def standardDeviation(@EventLoopResponse @Val eventLoopResponses: Array[ServicedThreadResponse], @ThreadPerRequestResponse @Val threadPerRequestResponses: Array[ServicedThreadResponse]): Double =
     stdDev((eventLoopResponses ++ threadPerRequestResponses).map(response => response.getTimestamp))
   // END SNIPPET: tutorial
