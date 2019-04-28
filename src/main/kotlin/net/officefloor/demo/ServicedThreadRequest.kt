@@ -4,5 +4,5 @@ import net.officefloor.web.HttpObject
 
 // START SNIPPET: tutorial
 @HttpObject
-class ServicedThreadRequest(val identifier: Int)
+data class ServicedThreadRequest(val identifier: Int)
 // END SNIPPET: tutorial

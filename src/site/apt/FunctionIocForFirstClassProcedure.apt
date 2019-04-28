@@ -12,11 +12,9 @@ Function IoC for First Class Procedure
 
   But understanding the analogy and seeing the practical implementation is not the same thing.  Therefore, I'm going to attempt to explain how the first class procedure has evolved.  This evolution starts with looking at the function.
 
-  The function:
+  The function takes in parameters to then produce the result:
 
 %{snippet|id=function|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
-
-  takes in parameters to then produce the result.
 
   However, before being able to obtain any results, the function also requires a thread to be run.   This is what I refer to as the "implicit thread".   The function does not define details regarding the thread to use, so defaults to the invoking thread of the function (the implicit thread).
 
