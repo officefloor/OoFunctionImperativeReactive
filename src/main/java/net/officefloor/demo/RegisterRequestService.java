@@ -19,7 +19,7 @@ package net.officefloor.demo;
 
 import net.officefloor.demo.entity.WeavedRequest;
 import net.officefloor.demo.entity.WeavedRequestRepository;
-import net.officefloor.plugin.section.clazz.NextFunction;
+import net.officefloor.plugin.section.clazz.Next;
 import net.officefloor.plugin.variable.Out;
 import net.officefloor.plugin.variable.Val;
 
@@ -31,7 +31,7 @@ import net.officefloor.plugin.variable.Val;
 public class RegisterRequestService {
 
 	// START SNIPPET: tutorial
-	@NextFunction("registered")
+	@Next("registered")
 	public static void registerRequest(@Val int requestIdentifier, WeavedRequestRepository repository,
 			Out<WeavedRequest> weavedRequest) {
 		WeavedRequest entity = new WeavedRequest(requestIdentifier);
