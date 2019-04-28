@@ -8,7 +8,7 @@ OO Functional Imperative Reactive weaved together with First Class Procedures
 
   This is first of a two part article to discuss the "First Class Procedure", a term I'm using to best describe the concept.
 
-  While Functional Programming provides composition through first class functions and Object Orientation provides composition through objects, first class procedures are to me a fusion of the two concepts.  For me, first class procedures make composition concerns a lot more explicit, while also separating concerns of state, composition and execution.  I find Object Orientation suffers issues of implicit object references (e.g. wanting a banana and getting the gorilla with the jungle), while functional programming (and OO) suffers issues of implicit threads.  The first class procedures tackles these issues, so that execution strategies, composition and state are all separate concerns.
+  While Functional Programming provides composition through first class functions and Object Orientation provides composition through objects, first class procedures are to me a fusion of the two concepts.  I find Object Orientation suffers issues of implicit object references (e.g. wanting a banana and getting the gorilla with the jungle), while functional programming (and OO) suffers issues of implicit threads.  The first class procedure tackles these issues so that composition, state and execution are all separate concerns.
 
   Now to write a complete description of the first class procedure is beyond a single article.  There are many patterns used together to enable the composition through first class procedures.  Therefore, I'm going to provide an introduction to first class procedures in two parts:
 
@@ -24,7 +24,7 @@ First class procedure
 
 *Simple event loop
 
-  This following first class procedure services a REST request.  This will be run on the HTTP socket event loop thread.
+  The following first class procedure services a REST request.  This will be run on the HTTP socket event loop thread.
 
 %{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/EventLoopService.java|ignoreDownloadError=false}
 
@@ -91,7 +91,7 @@ First Class Procedures weaved together
 
 *Functional
 
-  Next, the reactive responses are provided to Scala functional code to determine the standard deviation of service times.
+  Next the reactive responses are provided to Scala functional code to determine the standard deviation of service times.
 
 %{snippet|id=tutorial|file=./src/main/scala/net/officefloor/demo/StandardDeviationService.scala|ignoreDownloadError=false}
 
@@ -124,7 +124,7 @@ First Class Procedures weaved together
 
 *Successful response
 
-  And on successful storage of the request details in the database, the following first class procedure sends the response.
+  On successful storage of the request details in the database, the following first class procedure sends the response.
   
 %{snippet|id=tutorial|file=./src/main/java/net/officefloor/demo/Send.java|ignoreDownloadError=false}
 
@@ -163,8 +163,8 @@ Thread Injection
 
 %{snippet|file=./src/main/resources/application.teams|ignoreDownloadError=false}
 
-  Here we flag all procedures requiring a Spring Repository to be executed by a thread pool.  Remember I said keep note of use of Spring Repository.  Well the above configuration has any first class procedure requiring a Spring Repository executed by the configured thread pool.
-  
+  Here we flag all procedures requiring a Spring Repository to be executed by a thread pool.  Remember I said keep note of use of Spring Repository.  Well the above configuration has any first class procedure requiring a Spring Repository executed by the configured thread pool.  Note that thread pools are named teams, due to the modeling origins of first class procedures coming from Offices.
+
   Therefore, looking at the flow again, the thread execution is as follows:
 
    [[1]] Validate uses the thread of the socket listener event loop
@@ -198,6 +198,6 @@ Summary
 
   We've demonstrated how the first class procedure can weave together polyglot code written in different paradigms to service a request.  The code outlined above in the article is all the code required for the application.  There is no further weaving code required.
 
-  Furthermore, to avoid the problems of it only works on my machine (in this article), the code for the above is available {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}here}}.  See the {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}readme}} on how to run it.
+  Furthermore, to avoid the problems of it only works on my machine (in this article), the code for the above is available {{{https://github.com/sagenschneider/OoFunctionImperativeReactive}here}}.  See the {{{https://github.com/sagenschneider/OoFunctionImperativeReactive/blob/master/README.md}readme}} on how to run it.
   
   For more understanding of what's going on, see the {{{http://officefloor.net/tutorials/}tutorials}}, my {{{https://sagenschneider.blogspot.com/}other articles}} and in particular my {{{./FunctionIocForFirstClassProcedure.html}next article}}.
