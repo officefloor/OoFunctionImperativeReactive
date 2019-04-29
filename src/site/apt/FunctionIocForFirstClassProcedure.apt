@@ -8,21 +8,17 @@ Function IoC for First Class Procedure
 
   This is the second article of two to introduce the term I'm suggesting of "first class procedure".  The {{{./OoFunctionImperativeReactiveWeavedTogether.html}first article}}, provided a working example of the first class procedure to see them in action.  This article delves into the detail and some theory on how the first class procedure has evolved.
 
-  The inspiration and origins of the first class procedure started from watching how businesses are organised.   If you consider an application as a decision making system on information, you can consider an Office an application.  An Office takes in customer requests, processes information and then relays information to customers, factories, distribution chains, other Offices, etc.  It is a lot like a function of having informational inputs and producing informational outputs.  Furthermore, following the analogy you can consider people working within an Office, similar to threads of an application.  This analogy has lead to the first class procedure and is based on how businesses handle problems of scale, functional break down, information organisation, etc.
-
-  But understanding the analogy and seeing the practical implementation is not the same thing.  Therefore, I'm going to attempt to explain how the first class procedure has evolved.  This evolution starts with looking at the function.
-
-  The function takes in parameters to then produce the result:
+  The evolution of the "first class procedure" starts with looking at the function.  The function takes in parameters to then produce the result:
 
 %{snippet|id=function|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
   However, before being able to obtain any results, the function also requires a thread to be run.   This is what I refer to as the "implicit thread".   The function does not define details regarding the thread to use, so defaults to the invoking thread of the function (the implicit thread).
 
-  Ideally, we should enhance the function signature to indicate the thread more explicitly so we can allow more control in how the composed functions are executed.  Note that the executor is means to invoke with the implicit thread or a separate explicit thread via a thread pool:
+  Ideally, we should enhance the function signature to indicate the thread more explicitly so we can allow more control in how the composed functions are executed:
 
 %{snippet|id=invoke|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  Now the thread to execute the function is made explicit.
+  Now the thread to execute the function is made explicit.  Note that the executor is means to invoke with the implicit thread or a separate explicit thread via a thread pool.
 
   An argument might be that threading is hard and should be left to compilers/frameworks/etc.  However, I'm believing that I still want some control over the execution profile of the application.  A reason for this would be the following example.
 
@@ -36,7 +32,7 @@ Function IoC for First Class Procedure
 
 %{snippet|id=higher|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  Now the higher order function has to determine the thread for each contained function.  This can blow out the higher order function's signature.   Therefore, let's for now create a function that can determine the executor for a function based on the function being executed:
+  This now requires the higher order function to determine the thread for each contained function.  This can blow out the higher order function's signature.   Therefore, let's for now create a function that can determine the executor for a function:
 
 %{snippet|id=executorLocator|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
@@ -44,9 +40,9 @@ Function IoC for First Class Procedure
 
 %{snippet|id=higherWithLocator|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  So we've stopped the blow out of the higher order function signature, but it starts to highlight a problem of passing results between the composed functions.  Well not so much in passing results, but in which parts of logic to execute with which thread.
+  So we've stopped the blow out of the higher order function signature, but it starts to highlight a problem of passing results between the composed functions.  Well not so much in passing results, but in which parts of the logic to execute with which thread.
 
-  To get the result from functionA as an argument to functionB, we have two approaches:
+  To get the result from functionA to pass to functionB, we have two approaches:
 
    *  As functionA completes, the system returns the result to the higher order function's thread that then passes it onto functionB
   
@@ -66,25 +62,25 @@ Function IoC for First Class Procedure
 
    [[1]] Invokes next composed function on another thread (possibly the same thread required for step 2)
 
-  The thread context switch that happens in step 3 is not really required.   Furthermore, the cost of switching the thread would be more than the few operations to pass the result of first function to the second function.
+  The thread context switch that happens in step 3 is not really required.   Furthermore, the cost of switching the thread would be more than the few operations to pass the result of the first function to the second function.
 
   Note: I refer to thread context switching overheads assuming threads need to be scheduled in to handle each part.  However, even if threads were running continuously on separate cores, there is overheads in having to get the messages between the threads.
 
   There is also a second problem of exceptions.  Yes, I understand exceptions are not very functional, however I'll come to this later in regards to composition.
 
-  So if we take approach 2 of continuation, then the execution would be as follows:
+  So if we take approach 2 of continuations, then the execution would be as follows:
 
    [[1]] Higher order function executes
 
-   [[1]] Invokes composed function on another thread (passing in the next composed function)
+   [[1]] Invokes composed functionA on another thread (passing in the next composed functionB)
 
-   [[1]] On result, the composed function continues with the next composed function
+   [[1]] On result, the composed functionA continues with the next composed functionB
 
   We have eliminated the extra context switch in the first approach by letting the composed functions continue on with each other.
 
-  Now this is not overly special.   We've just reinventing Continuation Passing Style with the ability to execute the continuation with the implicit thread or delegating to a different thread.  In doing so, we try to use the implicit thread as much as possible to reduce context switching.  However when functions have different execution characteristics (such as blocking I/O, expensive CPU computations) we swap threads to enable appropriate execution of the functions to keep the overall application performant.  Note that the continuation also works nicely as the callback for asynchronous I/O.
+  Now this is not overly special.   This is just Continuation Passing Style with the ability to execute the continuation with the implicit thread or delegating to a different thread.  In doing so, we try to use the implicit thread as much as possible to reduce threading overheads.  However when functions have different execution characteristics (such as blocking I/O, expensive CPU computations) we swap threads to enable appropriate execution of the functions to keep the overall application performant.
 
-  Also, as another way of thinking about the threading is to consider the threads running on separate cores.  The first approach is very much synchronous communication.  Composed function is invoked and the higher order function effectively waits until the result is available.  Continuations, on the other hand, are more akin to asynchronous communication.  Higher order function triggers the composed function and then is free to continue other functions.  The composed function will continue itself with the next composed function.
+  Another way of thinking about this threading is to consider the threads running on separate cores.  The first approach is very much synchronous communication.  Composed function is invoked and the higher order function effectively waits until the result is available.  Continuations, on the other hand, are more akin to asynchronous communication.  Higher order function triggers the composed function and then is free to continue other functions.  The composed function will itself continue with the next composed function.
 
   But continuations do not come easily.
 
@@ -92,9 +88,9 @@ Function IoC for First Class Procedure
 
 %{snippet|id=continuation|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  Now might I dare say there is more than one outcome to a function - well to me anyway.  Yes, we could return a data type that has a successful result or an error.  I, personally, like to handle those outcomes separately.  Yes, we can create case statements to achieve this based on type, but for each new error type I'm adding new case statement handling.  This, to me, reminds me of reflection problems of having to interrogate for each error type.
+  Now might I dare say there is more than one outcome to a function - well to me anyway. Yes, we could return a data type defining both success and error. Case statements then handle these various outcomes. However, for each new error type we're having to add new case statement handling. This reminds me of reflection problems of having to interrogate for each error type. Personally, I like to handle these outcomes separately.
 
-  Rather than combining the result and error into the one next continuation, we can provide a continuation for each.   Note, my understanding is that this is not too different to try/catch blocks (except that we can now execute the catch block with the implicit thread or different thread).  In other words, we provide multiple continuations:
+  Rather than combining the result and error into the one next continuation, we can provide a continuation for each. In my understanding, this is not too different to try/catch blocks (except that we can now execute the catch block with the implicit thread or different thread). In other words, we provide multiple continuations:
 
 %{snippet|id=errorContinuations|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
@@ -120,11 +116,9 @@ Function IoC for First Class Procedure
 
   Yay, we can now go create key/value configuration for every function in the system.  Well, maybe not.
 
-  This granularity of configuration ends up being a nightmare.  I can certainly say my first versions of implementing first class procedures showed this very much to be the case.
+  This granularity of configuration ends up being a nightmare.  I can certainly say my first versions of implementing first class procedures showed this very much to be the case.  Plus given we have an assumed key to identify the continuation, how do we know we have every continuation configured for a complete system?  In other words, how can we make this compile safe?
 
-  Plus given we have an assumed key to identify the continuation, how do we know we have every continuation configured for a complete system?  In other words, how can we make this compile safe?
-
-  To solve this problem, I do what we typically always do in software, add more indirection.
+  To solve this problem, we do what we typically always do in software, add more indirection.
 
   Huh, more dynamic indirection to create a type safe compiled solution?  Well, yes.
 
@@ -136,13 +130,13 @@ Function IoC for First Class Procedure
 
 %{snippet|id=functionWithContinuation|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  So we've associated the continuations to the function, but this really is only a dynamic map based on key.  Therefore, to be compile safe, we need to make key mean something the compiler/framework can understand and check.
+  So we've associated the continuations to the function, but this really is only a dynamic map based on key. Therefore, to be compile safe, we need to give the key some meaning the compiler/framework can understand.
 
   Well to do this, let's go back to the exploded function signature:
 
 %{snippet|id=explodedFunction|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  Given, parameters are always ordered, we can use the index of the continuation as the key.  This has the ManagedFunction look as follows:
+  Given the parameters are always ordered, we can use the index of the continuation as the key.  This has the ManagedFunction look as follows:
 
 %{snippet|id=runContinuation|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
@@ -150,7 +144,7 @@ Function IoC for First Class Procedure
 
 %{snippet|id=throwsError|file=./src/site/functions/Function.java|ignoreDownloadError=false}
 
-  Checked exceptions are not ordered, but their types are unique.   We can, therefore, use the checked exception's type as the key.  This now turns the ManagedFunction into the following:
+  Checked exceptions are not ordered, but their types are unique. Therefore, we can use the checked exception's type as the key. This now turns the ManagedFunction into the following:
 
 %{snippet|id=catchException|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
@@ -176,7 +170,7 @@ Function IoC for First Class Procedure
 
 %{snippet|id=managedObject|file=./src/site/functions/Function.scala|ignoreDownloadError=false}
 
-  This now allows objects to trigger logic.  Why is this useful?   Well, for example, we can have a HTTP socket listener object that receives requests and services the request by invoking the continuation with the request.   Further ManagedFunction instances will then use details of the request, to route it via continuations to appropriate handling ManagedFunction instances to then service the request.
+  This now allows objects to trigger logic. Why is this useful? Well, for example, we can have a HTTP socket listener object that receives a request and services the request by invoking a continuation. Further ManagedFunction instances will then use details of the request, to route it via continuations to appropriate handling ManagedFunction instances to then service the request.
 
   The HTTP example actually points us to a design pattern already solving the issue of multiple parameters for a function.  A typical thread-per-request web server has a request, session and application context.   Now let's ignore session and application contexts as they are not concurrency safe.  It is the request context pattern that helps us.
 
@@ -239,8 +233,10 @@ Function IoC for First Class Procedure
   
   Though, do note that the actual implementation uses a lot more memoization, as function signatures are static allowing the reflection to be done at compile/startup time.
   
-  Furthermore, the overall effect is that higher order functions do not need to provide all arguments to call the function (procedure).  The control is inverted so configuration and the procedure itself defines what is injected into it.  Higher order composition need only use the continuations to invoke the first class procedures.
+  Furthermore, the overall effect is that higher order functions do not need to provide all arguments to call the function (procedure). The control is inverted so configuration and the procedure itself defines what is injected into it. Higher order composition need only use the continuations to invoke the first class procedures.
   
+  Plus, I find it lifts a constraint in functional programming of having to fit all results through the small key hole of the function's return type. The return type of the function needs to provide success and error details, and is coupled to have to pass this through the chain of composed functions.  First class procedures, via variables, decouples this so any upstream procedure can output the value for any downstream procedure to consume.  Furthermore, checked exceptions continue error flows to remove this from function return types (output variable types).
+
   There are also other concepts built on first class procedures, such as:
   
    * process, thread, function scoped dependency contexts for concurrency/parallel processing
@@ -258,3 +254,5 @@ Function IoC for First Class Procedure
   So, in conclusion, the first class procedure is applying inversion of control to the function to inject in state, continuations and thread (via Executor).  This means the first class procedure no longer requires composition via return values of the function.  This makes it significantly easier to weave impure/pure functionality together.  Furthermore, it allows execution strategies for the application to be configured in at deployment time.
 
   And to see all this in action, please see the {{{./OoFunctionImperativeReactiveWeavedTogether.html}first article}}.
+
+  For more information, see this paper {{{http://doi.acm.org/10.1145/2739011.2739013}OfficeFloor: using office patterns to improve software design}} (free download {{{http://www.officefloor.net/about.html}here}}).
