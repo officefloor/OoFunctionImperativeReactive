@@ -22,7 +22,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import net.officefloor.demo.entity.WeavedRequest;
 import net.officefloor.frame.api.function.AsynchronousFlow;
-import net.officefloor.plugin.section.clazz.NextFunction;
+import net.officefloor.plugin.section.clazz.Next;
 import net.officefloor.plugin.variable.Out;
 import net.officefloor.plugin.variable.Val;
 import reactor.core.publisher.Flux;
@@ -37,7 +37,7 @@ public class ReactiveService {
 	// START SNIPPET: tutorial
 	private final static String URL = "http://localhost:7878/{path}";
 
-	@NextFunction("useData")
+	@Next("useData")
 	public static void retrieveData(WebClient client, AsynchronousFlow eventLoopFlow,
 			@EventLoopResponse Out<ServicedThreadResponse[]> eventLoopResponse, @Val WeavedRequest request,
 			AsynchronousFlow threadPerRequestFlow,

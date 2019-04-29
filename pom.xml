@@ -8,24 +8,17 @@
 	<name>OfficeFloor OO, Function, Imperative, Reactive weaved together</name>
 	<description>Demo and article content for First Class Procedures</description>
 	<version>1.0.0</version>
+	<parent>
+		<groupId>net.officefloor</groupId>
+		<artifactId>bom</artifactId>
+		<version>3.9.2</version>
+	</parent>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectVersion>${project.version}</projectVersion>
-		<officefloor.version>3.9.1</officefloor.version>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>net.officefloor</groupId>
-				<artifactId>bom</artifactId>
-				<version>${officefloor.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>net.officefloor.web</groupId>
@@ -89,7 +82,6 @@
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
-				<version>1.3.31</version>
 				<executions>
 					<execution>
 						<id>kotlin-compile-first</id>
@@ -119,7 +111,6 @@
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
-				<version>4.0.1</version>
 				<executions>
 					<execution>
 						<id>scala-compile</id>
@@ -177,7 +168,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>2.1.4.RELEASE</version>
 				<configuration>
 					<mainClass>net.officefloor.OfficeFloorMain</mainClass>
 					<classifier>exec</classifier>
@@ -193,12 +183,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.7.1</version>
+				<version>${maven-site-version}</version><!--$NO-MVN-MAN-VER$ -->
 			</plugin>
 			<plugin>
 				<groupId>net.officefloor.maven</groupId>
 				<artifactId>officefloor-maven-plugin</artifactId>
-				<version>${officefloor.version}</version>
 			</plugin>
 		</plugins>
 		<pluginManagement>
