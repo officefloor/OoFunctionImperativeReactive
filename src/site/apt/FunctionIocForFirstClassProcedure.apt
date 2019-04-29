@@ -255,4 +255,4 @@ Function IoC for First Class Procedure
 
   And to see all this in action, please see the {{{./OoFunctionImperativeReactiveWeavedTogether.html}first article}}.
 
-  For more information, see this paper {{{OfficeFloor: using office patterns to improve software design}http://doi.acm.org/10.1145/2739011.2739013}} (free download {{{here}http://www.officefloor.net/about.html}}).
+  For more information, see this paper {{{http://doi.acm.org/10.1145/2739011.2739013}OfficeFloor: using office patterns to improve software design}} (free download {{{http://www.officefloor.net/about.html}here}}).
