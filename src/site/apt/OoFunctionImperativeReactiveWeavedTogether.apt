@@ -1,15 +1,29 @@
 				       ------------------
-   OO Functional Imperative Reactive weaved together with First Class Procedures
+           OO Functional Imperative Reactive weaved together
 				       ------------------
 				      Daniel Sagenschneider
 				       ------------------
 
 OO Functional Imperative Reactive weaved together with First Class Procedures
 
-  This is first of a two part article to discuss the "First Class Procedure", a term I'm using to best describe the concept.
+  This is first of a two part article to discuss how different paradigms in programming can be weaved together seamlessly via the "First Class Procedure", a term I'm using to best describe the concept. 
 
-  While Functional Programming provides composition through first class functions and Object Orientation provides composition through objects, first class procedures are to me a fusion of the two concepts.  I find Object Orientation suffers issues of implicit object references (e.g. wanting a banana and getting the gorilla with the jungle), while functional programming (and OO) suffers issues of implicit threads.  The first class procedure tackles these issues so that composition, state and execution are all separate concerns.
+  The working code in this article demonstrates how you can seamlessly weave together the following to service a request:
 
+   [[1]] Validate a request (on socket event loop thread).
+   
+   [[1]] Start a transaction and register the request in the database.  This will be on another thread to avoid halting the socket event loop thread.
+   
+   [[1]] Make reactive calls to pull in data from other services.
+   
+   [[1]] Run some functional code to work out the standard deviation on service times.
+
+   [[1]] Undertake alternate flows to handle special cases (including handling exceptions).  Then if no exceptions causing rollback, store results in the database.  This again is on a different thread to not tie up the reactive event loop thread.
+
+   [[1]] Send the response after committing the transaction
+
+  This allows you to use the programming paradigm best suited to the various problems at hand.  Note the request servicing in the demonstration is arbitrary.  The focus is on showing how the various programming paradigms can be weaved together.
+  
   Now to write a complete description of the first class procedure is beyond a single article.  There are many patterns used together to enable the composition through first class procedures.  Therefore, I'm going to provide an introduction to first class procedures in two parts:
 
    * This article to demonstrate with working code how flexible and easy composition is with first class procedures
@@ -43,21 +57,9 @@ First Class Procedures weaved together
 
   Ok, the above is little boring.  We've seen this in web application servers before.  Show us something interesting!
 
-  To show something more interesting we are going to weave first class procedures together to achieve the following:
-  
-   [[1]] Validate a request (on socket event loop thread).
-   
-   [[1]] Start a transaction and register the request in the database.  This will be on another thread to avoid halting the socket event loop thread.
-   
-   [[1]] Make reactive calls to pull in data from other services.
-   
-   [[1]] Run some functional code to work out the standard deviation on service times.
+  To show something more interesting we are going to weave first class procedures together to achieve the example detailed at the start of this article.
 
-   [[1]] Undertake alternate flows to handle special cases (including handling exceptions).  Then if no exceptions causing rollback, store results in the database.  This again is on a different thread to not tie up the reactive event loop thread.
-
-   [[1]] Send the response after committing the transaction
-
-  We'll address each first class procedure in the order above.
+  Each step in the request servicing is implemented as a first class procedure.  We'll address each first class procedure in the order specified.
 
 
 *Validate request (on socket event loop)
