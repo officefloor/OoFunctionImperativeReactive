@@ -8,7 +8,7 @@ pipeline {
     
     triggers {
         parameterizedCron('''
-H 1 * * * 
+H 2 * * * 
 ''')
     }
     
