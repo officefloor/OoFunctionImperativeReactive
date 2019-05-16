@@ -22,4 +22,4 @@ First class procedure weaving together OO, Functional, Imperative, Reactive
 
 For more information, see [OfficeFloor](http://officefloor.net) - particularly the [tutorials](http://officefloor.net/tutorials/)
 
-Also, see [blog](http://sagenschneider.blogspot.com) regarding why.
+Also, see the [blog](http://sagenschneider.blogspot.com) regarding why.
