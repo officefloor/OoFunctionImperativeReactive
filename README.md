@@ -22,4 +22,4 @@ First class procedure weaving together OO, Functional, Imperative, Reactive
 
 For more information, see [OfficeFloor](http://officefloor.net) - particularly the [tutorials](http://officefloor.net/tutorials/)
 
-Note: for Windows users there is a [file creation issue assuming posix environment](https://github.com/sagenschneider/OfficeFloor/issues/312).  This is actively being worked on and should be resolved shortly.  To see working please run on Linux (posix system).
+Also, see the [blog](http://sagenschneider.blogspot.com) regarding why.
