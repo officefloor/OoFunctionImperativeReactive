@@ -21,3 +21,5 @@ First class procedure weaving together OO, Functional, Imperative, Reactive
  1. Once done, the application can be stopped with `mvn net.officefloor.maven:officefloor-maven-plugin:close`
 
 For more information, see [OfficeFloor](http://officefloor.net) - particularly the [tutorials](http://officefloor.net/tutorials/)
+
+Also, see [blog](http://sagenschneider.blogspot.com) regarding why.
