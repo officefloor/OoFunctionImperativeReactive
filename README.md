@@ -2,7 +2,9 @@
 
 First class procedure weaving together OO, Functional, Imperative, Reactive
 
-[![Build Status](https://travis-ci.com/sagenschneider/OoFunctionImperativeReactive.svg?branch=master)](https://travis-ci.com/sagenschneider/OoFunctionImperativeReactive)
+See [OO Functional Imperative Reactive weaved together](https://sagenschneider.blogspot.com/2019/04/oo-functional-imperative-reactive.html) for details of this repository.
+
+[![Build Status](https://travis-ci.com/officefloor/OoFunctionImperativeReactive.svg?branch=master)](https://travis-ci.com/officefloor/OoFunctionImperativeReactive) [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=officefloor/OoFunctionImperativeReactive)](https://dependabot.com)
 
 ## Try out the example code
 
