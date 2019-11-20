@@ -16,7 +16,6 @@ object StandardDeviationService {
 
   def stdDev(timestamps: Iterable[Long]): Double = math.sqrt(variance(timestamps))
 
-  @Next("use")
   def standardDeviation(@EventLoopResponse @Val eventLoopResponses: Array[ServicedThreadResponse], @ThreadPerRequestResponse @Val threadPerRequestResponses: Array[ServicedThreadResponse]): Double =
     stdDev((eventLoopResponses ++ threadPerRequestResponses).map(response => response.getTimestamp))
   // END SNIPPET: tutorial

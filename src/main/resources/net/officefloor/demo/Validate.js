@@ -9,6 +9,5 @@ function validate(identifier, requestIdentifier) {
 }
 validate.officefloor = [ 
 	{ httpPathParameter: "identifier" },
-	{ out: Integer },
-	{ next : "valid" }
+	{ out: Integer }
 ];

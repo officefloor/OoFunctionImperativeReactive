@@ -1,89 +1,92 @@
 <woof>
   <http-continuations>
-    <http-continuation path="/event-loop" secure="false" x="118" y="106">
-      <section name="EventLoop" input="service"/>
+    <http-continuation path="/event-loop" secure="false" x="114" y="63">
+      <procedure name="eventLoopService"/>
     </http-continuation>
   </http-continuations>
   <http-inputs>
-    <http-input path="/thread-per-request" method="POST" secure="false" x="78" y="185">
-      <section name="ThreadPerRequest" input="service"/>
+    <http-input path="/thread-per-request" method="POST" secure="false" x="64" y="104">
+      <procedure name="threadPerRequestService"/>
     </http-input>
-    <http-input path="/weave/{identifier}" method="POST" secure="false" x="77" y="283">
-      <section name="Validate" input="validate"/>
+    <http-input path="/weave/{identifier}" method="POST" secure="false" x="74" y="284">
+      <procedure name="validate"/>
     </http-input>
   </http-inputs>
   <templates>
   </templates>
   <sections>
-    <section name="EventLoop" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.EventLoopService" x="322" y="85">
-      <input name="service" parameter-type=""/>
-    </section>
-    <section name="Functional" source="net.officefloor.polyglot.scala.ScalaFunctionSectionSource" location="net.officefloor.demo.StandardDeviationService$" x="1052" y="257">
-      <property name="function.name" value="standardDeviation"/>
-      <input name="standardDeviation" parameter-type=""/>
-      <output name="use" argument-type="double">
-        <section name="Store" input="store"/>
-      </output>
-    </section>
-    <section name="HandleCommitException" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleCommitExceptionService" x="967" y="320">
-      <input name="handle" parameter-type="net.officefloor.demo.WeavedException"/>
-    </section>
-    <section name="HandleRollbackException" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleRollbackExceptionService" x="992" y="418">
-      <input name="handle" parameter-type="net.officefloor.demo.WeavedException"/>
-    </section>
-    <section name="HandleSpecialCases" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.HandleSpecialCasesService" x="1594" y="255">
-      <input name="handleSpecialCase" parameter-type=""/>
-    </section>
-    <section name="Imperative" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.RegisterRequestService" x="521" y="259">
-      <input name="registerRequest" parameter-type=""/>
-      <output name="registered" argument-type="">
-        <section name="Reactive" input="retrieveData"/>
-      </output>
-    </section>
-    <section name="Reactive" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ReactiveService" x="801" y="258">
-      <input name="retrieveData" parameter-type=""/>
-      <output name="useData" argument-type="">
-        <section name="Functional" input="standardDeviation"/>
-      </output>
-    </section>
-    <section name="Send" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.Send" x="1627" y="330">
-      <input name="send" parameter-type=""/>
-    </section>
-    <section name="Store" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.StoreStandardDeviationService" x="1305" y="257">
-      <input name="store" parameter-type="double"/>
+  </sections>
+  <procedures>
+    <procedure name="handleCommitException" resource="net.officefloor.demo.HandleCommitExceptionService" source="Class" procedure="handle" x="997" y="396">
+      <next argument-type="">
+      </next>
+    </procedure>
+    <procedure name="handleRollbackException" resource="net.officefloor.demo.HandleRollbackExceptionService" source="Class" procedure="handle" x="1000" y="497">
+      <next argument-type="">
+      </next>
+    </procedure>
+    <procedure name="handleSpecialCase" resource="net.officefloor.demo.HandleSpecialCasesService" source="Class" procedure="handleSpecialCase" x="1479" y="294">
+      <next argument-type="">
+      </next>
+    </procedure>
+    <procedure name="registerRequest" resource="net.officefloor.demo.RegisterRequestService" source="Class" procedure="registerRequest" x="560" y="280">
+      <next argument-type="">
+        <procedure name="retrieveData"/>
+      </next>
+    </procedure>
+    <procedure name="retrieveData" resource="net.officefloor.demo.ReactiveService" source="Class" procedure="retrieveData" x="776" y="280">
+      <next argument-type="">
+        <procedure name="standardDeviation"/>
+      </next>
+    </procedure>
+    <procedure name="send" resource="net.officefloor.demo.Send" source="Class" procedure="send" x="1507" y="372">
+      <next argument-type="">
+      </next>
+    </procedure>
+    <procedure name="eventLoopService" resource="net.officefloor.demo.EventLoopService" source="Class" procedure="service" x="308" y="57">
+      <next argument-type="">
+      </next>
+    </procedure>
+    <procedure name="threadPerRequestService" resource="net.officefloor.demo.ThreadPerRequestService" source="Class" procedure="service" x="309" y="105">
+      <next argument-type="">
+      </next>
+    </procedure>
+    <procedure name="standardDeviation" resource="net.officefloor.demo.StandardDeviationService$" source="Scala" procedure="standardDeviation" x="969" y="276">
+      <next argument-type="double">
+        <procedure name="store"/>
+      </next>
+    </procedure>
+    <procedure name="store" resource="net.officefloor.demo.StoreStandardDeviationService" source="Class" procedure="store" x="1218" y="273">
+      <next argument-type="">
+      </next>
       <output name="handleSpecialCases" argument-type="">
-        <section name="HandleSpecialCases" input="handleSpecialCase"/>
+        <procedure name="handleSpecialCase"/>
       </output>
       <output name="stored" argument-type="">
-        <section name="Send" input="send"/>
+        <procedure name="send"/>
       </output>
-    </section>
-    <section name="ThreadPerRequest" source="net.officefloor.plugin.section.clazz.ClassSectionSource" location="net.officefloor.demo.ThreadPerRequestService" x="320" y="167">
-      <input name="service" parameter-type=""/>
-    </section>
-    <section name="Validate" source="net.officefloor.polyglot.javascript.JavaScriptFunctionSectionSource" location="net/officefloor/demo/Validate.js" x="324" y="261">
-      <property name="function.name" value="validate"/>
-      <input name="validate" parameter-type=""/>
-      <output name="valid" argument-type="">
-        <section name="Imperative" input="registerRequest"/>
-      </output>
-    </section>
-  </sections>
+    </procedure>
+    <procedure name="validate" resource="net/officefloor/demo/Validate.js" source="JavaScript" procedure="validate" x="338" y="280">
+      <next argument-type="">
+        <procedure name="registerRequest"/>
+      </next>
+    </procedure>
+  </procedures>
   <securities>
   </securities>
   <governances>
     <governance name="Transaction" source="net.officefloor.spring.data.SpringDataTransactionGovernanceSource" x="484" y="189">
-      <governance-area x="509" y="239" width="1301" height="171"/>
+      <governance-area x="511" y="239" width="1299" height="221"/>
     </governance>
   </governances>
   <resources>
   </resources>
   <exceptions>
-    <exception class="net.officefloor.demo.WeavedCommitException" x="615" y="337">
-      <section name="HandleCommitException" input="handle"/>
+    <exception class="net.officefloor.demo.WeavedCommitException" x="602" y="401">
+      <procedure name="handleCommitException"/>
     </exception>
-    <exception class="net.officefloor.demo.WeavedRollbackException" x="629" y="434">
-      <section name="HandleRollbackException" input="handle"/>
+    <exception class="net.officefloor.demo.WeavedRollbackException" x="594" y="503">
+      <procedure name="handleRollbackException"/>
     </exception>
   </exceptions>
   <starting>
