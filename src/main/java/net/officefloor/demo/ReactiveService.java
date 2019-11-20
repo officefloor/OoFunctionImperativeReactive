@@ -37,7 +37,6 @@ public class ReactiveService {
 	// START SNIPPET: tutorial
 	private final static String URL = "http://localhost:7878/{path}";
 
-	@Next("useData")
 	public static void retrieveData(WebClient client, AsynchronousFlow eventLoopFlow,
 			@EventLoopResponse Out<ServicedThreadResponse[]> eventLoopResponse, @Val WeavedRequest request,
 			AsynchronousFlow threadPerRequestFlow,
