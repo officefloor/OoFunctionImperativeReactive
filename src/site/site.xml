@@ -17,7 +17,7 @@
 			<sourceLineNumbersEnabled>false</sourceLineNumbersEnabled>
 			<copyrightClass>pull-right</copyrightClass>
 			<gitHub>
-				<projectId>sagenschneider/OoFunctionImperativeReactive</projectId>
+				<projectId>officefloor/OoFunctionImperativeReactive</projectId>
 				<ribbonOrientation>right</ribbonOrientation>
 				<ribbonColor>green</ribbonColor>
 			</gitHub>
