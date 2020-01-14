@@ -25,16 +25,16 @@
 			<artifactId>woof</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.officefloor.polyglot</groupId>
-			<artifactId>officepolyglot_javascript</artifactId>
+			<groupId>net.officefloor.javascript</groupId>
+			<artifactId>officejavascript</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.officefloor.polyglot</groupId>
-			<artifactId>officepolyglot_kotlin</artifactId>
+			<groupId>net.officefloor.kotlin</groupId>
+			<artifactId>officekotlin</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.officefloor.polyglot</groupId>
-			<artifactId>officepolyglot_scala</artifactId>
+			<groupId>net.officefloor.scala</groupId>
+			<artifactId>officescala</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.officefloor.spring</groupId>
