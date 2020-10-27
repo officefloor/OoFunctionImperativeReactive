@@ -19,13 +19,12 @@ package net.officefloor.demo;
 
 import javax.sql.DataSource;
 
+import net.officefloor.plugin.clazz.Dependency;
 import org.flywaydb.core.Flyway;
 import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
 
-import net.officefloor.spring.test.SpringRule;
 import net.officefloor.test.OfficeFloorRule;
+import org.junit.Rule;
 
 /**
  * Provides running application with access to Spring resources.
@@ -34,17 +33,14 @@ import net.officefloor.test.OfficeFloorRule;
  */
 public abstract class AbstractBaseRunning {
 
-	public static final SpringRule spring = new SpringRule();
+	@Rule
+	public final OfficeFloorRule officeFloor = new OfficeFloorRule(this);
 
-	public static final OfficeFloorRule officeFloor = new OfficeFloorRule();
-
-	@ClassRule
-	public static final RuleChain ordered = RuleChain.outerRule(spring).around(officeFloor);
+	private @Dependency DataSource dataSource;
 
 	@Before
 	public void resetDatabase() {
-		DataSource dataSource = spring.getBean(DataSource.class);
-		Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+		Flyway flyway = Flyway.configure().dataSource(this.dataSource).load();
 		flyway.clean();
 		flyway.migrate();
 	}

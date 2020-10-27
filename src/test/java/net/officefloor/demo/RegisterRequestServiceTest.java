@@ -20,6 +20,7 @@ package net.officefloor.demo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import net.officefloor.plugin.clazz.Dependency;
 import org.junit.Test;
 
 import net.officefloor.demo.entity.WeavedRequest;
@@ -33,15 +34,16 @@ import net.officefloor.model.test.variable.MockVar;
  */
 public class RegisterRequestServiceTest extends AbstractBaseRunning {
 
+	private @Dependency WeavedRequestRepository repository;
+
 	@Test
 	public void registerRequest() {
-		WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
 
 		// Capture request
 		MockVar<WeavedRequest> weavedRequest = new MockVar<>();
 
 		// Register the request
-		RegisterRequestService.registerRequest(10, repository, weavedRequest);
+		RegisterRequestService.registerRequest(10, this.repository, weavedRequest);
 
 		// Ensure have request
 		assertEquals("Incorrect request identifier", Integer.valueOf(10), weavedRequest.get().getRequestIdentifier());

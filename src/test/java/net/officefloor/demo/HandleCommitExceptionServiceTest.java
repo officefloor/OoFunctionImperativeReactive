@@ -19,6 +19,7 @@ package net.officefloor.demo;
 
 import static org.junit.Assert.assertEquals;
 
+import net.officefloor.plugin.clazz.Dependency;
 import org.junit.Test;
 
 import net.officefloor.demo.entity.WeavedError;
@@ -33,17 +34,18 @@ import net.officefloor.woof.mock.MockObjectResponse;
  */
 public class HandleCommitExceptionServiceTest extends AbstractBaseRunning {
 
+	private @Dependency WeavedRequestRepository repository;
+
 	@Test
 	public void ensureWriteError() {
 		MockObjectResponse<WeavedErrorResponse> response = new MockObjectResponse<>();
-		WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
 
 		// Load request
 		WeavedRequest request = new WeavedRequest(10);
-		repository.save(request);
+		this.repository.save(request);
 
 		// Service
-		HandleCommitExceptionService.handle(new WeavedCommitException(request), repository, response);
+		HandleCommitExceptionService.handle(new WeavedCommitException(request), this.repository, response);
 
 		// Ensure correct response
 		WeavedErrorResponse error = response.getObject();

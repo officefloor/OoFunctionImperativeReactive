@@ -1,8 +1,8 @@
 package net.officefloor.demo
 
-import Numeric.Implicits._
-import net.officefloor.plugin.section.clazz.Next
 import net.officefloor.plugin.variable.Val
+
+import Numeric.Implicits._
 
 object StandardDeviationService {
 

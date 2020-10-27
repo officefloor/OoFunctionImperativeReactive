@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>net.officefloor</groupId>
 		<artifactId>bom</artifactId>
-		<version>3.26.0</version>
+		<version>3.28.0</version>
 	</parent>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,11 +55,6 @@
 		<dependency>
 			<groupId>net.officefloor.web</groupId>
 			<artifactId>woof_test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.officefloor.spring</groupId>
-			<artifactId>officespring_test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
