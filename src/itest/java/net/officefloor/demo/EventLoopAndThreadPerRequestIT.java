@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,8 +47,8 @@ public class EventLoopAndThreadPerRequestIT {
 		mapper.registerModule(new KotlinModule());
 	}
 
-	@ClassRule
-	public static final MockWoofServerRule server = new MockWoofServerRule();
+	@Rule
+	public final MockWoofServerRule server = new MockWoofServerRule(this);
 
 	@Test
 	public void eventLoop() throws IOException {

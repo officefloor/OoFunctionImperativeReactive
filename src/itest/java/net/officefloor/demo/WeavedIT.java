@@ -28,15 +28,14 @@ import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
+import net.officefloor.plugin.clazz.Dependency;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
 import org.flywaydb.core.Flyway;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
@@ -47,7 +46,6 @@ import net.officefloor.demo.entity.WeavedRequest;
 import net.officefloor.demo.entity.WeavedRequestRepository;
 import net.officefloor.server.http.HttpClientRule;
 import net.officefloor.server.http.HttpException;
-import net.officefloor.spring.test.SpringRule;
 import net.officefloor.test.OfficeFloorRule;
 import net.officefloor.web.json.JacksonHttpObjectResponderFactory;
 
@@ -59,12 +57,8 @@ import net.officefloor.web.json.JacksonHttpObjectResponderFactory;
 public class WeavedIT {
 
 	// START SNIPPET: tutorial
-	public static final SpringRule spring = new SpringRule();
-
-	public static final OfficeFloorRule officeFloor = new OfficeFloorRule();
-
-	@ClassRule
-	public static final RuleChain ordered = RuleChain.outerRule(spring).around(officeFloor);
+	@Rule
+	public final OfficeFloorRule officeFloor = new OfficeFloorRule(this);
 
 	@Rule
 	public final HttpClientRule client = new HttpClientRule();
@@ -74,20 +68,23 @@ public class WeavedIT {
 		mapper.registerModule(new KotlinModule());
 	}
 
+	private @Dependency DataSource dataSource;
+
+	private @Dependency WeavedRequestRepository repository;
+
 	@Test
 	public void confirmWeavedTogether() throws Exception {
 		HttpResponse response = this.client.execute(new HttpPost(this.client.url("/weave/1")));
 		assertEquals("Should be successful", 200, response.getStatusLine().getStatusCode());
 		WeavedResponse body = mapper.readValue(EntityUtils.toString(response.getEntity()), WeavedResponse.class);
-		WeavedRequest entity = spring.getBean(WeavedRequestRepository.class).findById(body.getRequestNumber()).get();
+		WeavedRequest entity = this.repository.findById(body.getRequestNumber()).get();
 		assertNotNull("Should have standard deviation stored", entity.getRequestStandardDeviation());
 	}
 	// END SNIPPET: tutorial
 
 	@Before
 	public void resetDatabase() {
-		DataSource dataSource = spring.getBean(DataSource.class);
-		Flyway flyway = Flyway.configure().dataSource(dataSource).load();
+		Flyway flyway = Flyway.configure().dataSource(this.dataSource).load();
 		flyway.clean();
 		flyway.migrate();
 	}
@@ -145,8 +142,7 @@ public class WeavedIT {
 	@Test
 	public void storeResults() throws Exception {
 		this.doRequest(10, (response) -> {
-			WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
-			WeavedRequest entity = repository.findById(response.getRequestNumber()).get();
+			WeavedRequest entity = this.repository.findById(response.getRequestNumber()).get();
 			assertNotNull("Should have request", entity);
 			RequestStandardDeviation standardDeviation = entity.getRequestStandardDeviation();
 			assertNotNull("Should have standard deviation", standardDeviation);
@@ -158,8 +154,7 @@ public class WeavedIT {
 	@Test
 	public void rollbackEscalation() throws Exception {
 		this.doErrorRequest(3, (error) -> {
-			WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
-			Optional<WeavedRequest> notAvailable = repository.findById(error.getRequestNumber());
+			Optional<WeavedRequest> notAvailable = this.repository.findById(error.getRequestNumber());
 			assertFalse("Should rollback exception", notAvailable.isPresent());
 		});
 	}
@@ -167,8 +162,7 @@ public class WeavedIT {
 	@Test
 	public void commitEscalation() throws Exception {
 		this.doErrorRequest(4, (error) -> {
-			WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
-			WeavedRequest entity = repository.findById(error.getRequestNumber()).get();
+			WeavedRequest entity = this.repository.findById(error.getRequestNumber()).get();
 			assertNull("Should not have standard deviation", entity.getRequestStandardDeviation());
 			WeavedError weavedError = entity.getWeavedError();
 			assertNotNull("Should have weaved error", weavedError);

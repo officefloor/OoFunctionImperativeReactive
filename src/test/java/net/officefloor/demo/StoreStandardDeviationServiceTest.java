@@ -22,6 +22,7 @@ import net.officefloor.demo.entity.RequestStandardDeviation;
 import net.officefloor.demo.entity.WeavedRequest;
 import net.officefloor.demo.entity.WeavedRequestRepository;
 import net.officefloor.model.test.variable.MockVar;
+import net.officefloor.plugin.clazz.Dependency;
 import net.officefloor.plugin.clazz.FlowSuccessful;
 import org.hibernate.AssertionFailure;
 import org.junit.Test;
@@ -36,9 +37,10 @@ import static org.junit.Assert.assertTrue;
  */
 public class StoreStandardDeviationServiceTest extends AbstractBaseRunning {
 
+    private @Dependency WeavedRequestRepository repository;
+
     @Test
     public void storeStandardDeviation() {
-        WeavedRequestRepository repository = spring.getBean(WeavedRequestRepository.class);
 
         WeavedRequest request = new WeavedRequest(10);
         MockVar<RequestStandardDeviation> stDevOut = new MockVar<>();
@@ -60,13 +62,13 @@ public class StoreStandardDeviationServiceTest extends AbstractBaseRunning {
             public void stored() {
                 isStored[0] = true;
             }
-        }, request, repository, stDevOut);
+        }, request, this.repository, stDevOut);
 
         // Ensure flagged stored
         assertTrue("Should be stored to continue flow", isStored[0]);
 
         // Ensure store standard deviation
-        WeavedRequest entity = repository.findById(request.getId()).get();
+        WeavedRequest entity = this.repository.findById(request.getId()).get();
         assertEquals("Incorrect standard deviation", 5.0, entity.getRequestStandardDeviation().getStandardDeviation(),
                 0.000001);
     }

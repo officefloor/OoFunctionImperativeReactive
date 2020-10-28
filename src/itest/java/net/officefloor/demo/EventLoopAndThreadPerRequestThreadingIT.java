@@ -29,6 +29,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -46,8 +47,8 @@ public class EventLoopAndThreadPerRequestThreadingIT {
 
 	private final static String URL = "http://localhost:7878/{path}";
 
-	@ClassRule
-	public static final OfficeFloorRule officeFloor = new OfficeFloorRule();
+	@Rule
+	public final OfficeFloorRule officeFloor = new OfficeFloorRule(this);
 
 	@Test
 	public void eventLoop() throws Exception {
