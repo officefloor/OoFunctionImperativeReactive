@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>net.officefloor</groupId>
 		<artifactId>bom</artifactId>
-		<version>3.39.0</version>
+		<version>3.40.0</version>
 	</parent>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
